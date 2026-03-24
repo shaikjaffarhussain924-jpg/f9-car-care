@@ -62,6 +62,15 @@ const Navbar = () => {
             )
           )}
           <a
+            href="https://wa.me/917032674047?text=I'd%20like%20to%20book%20a%20service"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs tracking-[0.12em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300 flex items-center gap-1.5"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            WhatsApp
+          </a>
+          <a
             href="tel:+917032674047"
             className="text-xs tracking-[0.12em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300 flex items-center gap-1.5"
           >
