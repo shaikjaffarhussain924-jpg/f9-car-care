@@ -1227,7 +1227,12 @@ export const serviceSlugMap: Record<string, string> = {
   "Ceramic Coating": "ceramic-coating",
   "PPF (Paint Protection Film)": "ppf",
   "Car Seat Covers": "car-seat-covers",
-  "Car Floor Matting": "", // no dedicated page
+  "Car Floor Matting": "",
   "Car Denting & Painting": "car-denting-painting",
   "Car Restoration": "car-restoration",
+  "Car Washing": "",
+  "Car General Services": "",
+  "Car Repair Services": "",
+  "Car AC Repair Services": "",
+  "Car Sunfilm": "",
 };

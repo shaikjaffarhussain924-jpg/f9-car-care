@@ -49,6 +49,31 @@ const services = [
     title: "Car Restoration",
     description: "Complete vehicle restoration bringing your car back to its original glory with meticulous craftsmanship.",
   },
+  {
+    icon: Waves,
+    title: "Car Washing",
+    description: "Professional exterior and interior car wash services to keep your vehicle spotless and fresh every day.",
+  },
+  {
+    icon: Settings,
+    title: "Car General Services",
+    description: "Routine maintenance and general servicing to keep your car running smoothly and efficiently.",
+  },
+  {
+    icon: PenTool,
+    title: "Car Repair Services",
+    description: "Expert car repair solutions for mechanical and electrical issues with quality parts and skilled technicians.",
+  },
+  {
+    icon: Thermometer,
+    title: "Car AC Repair Services",
+    description: "Complete car AC diagnostics, repair, and gas refilling to keep your cabin cool and comfortable.",
+  },
+  {
+    icon: Sun,
+    title: "Car Sunfilm",
+    description: "Premium sun control films for UV protection, heat reduction, and enhanced privacy for your vehicle.",
+  },
 ];
 
 const Services = () => {
