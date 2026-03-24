@@ -273,7 +273,7 @@ const ServiceDetailPage = ({ data }: Props) => {
               </h2>
               {section.paragraphs.map((p, pi) => (
                 <p key={pi} className="text-muted-foreground leading-relaxed text-base md:text-lg mb-4 last:mb-0">
-                  {p}
+                  {highlightText(p)}
                 </p>
               ))}
               {section.listItems && section.listItems.length > 0 && (
