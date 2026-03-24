@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowLeft, CheckCircle, Phone } from "lucide-react";
@@ -7,6 +7,32 @@ import type { ServicePageData } from "@/data/servicePages";
 
 interface Props {
   data: ServicePageData;
+}
+
+const HIGHLIGHT_KEYWORDS = [
+  "ceramic coating", "PPF", "paint protection film", "Teflon coating", "nano coating",
+  "deep interior wash", "car detailing", "hydrophobic", "UV protection", "scratch resistant",
+  "showroom finish", "9H hardness", "graphene", "self-healing", "anti-scratch",
+  "water repellent", "chemical resistant", "swirl marks", "paint correction",
+  "interior cleaning", "steam cleaning", "odour removal", "sanitization",
+  "denting", "painting", "restoration", "seat covers", "floor matting", "sunfilm",
+  "Hyderabad", "Hafeezpet", "F9 Car Care", "Kukatpally", "Miyapur", "Kondapur",
+  "JEEP", "BMW", "Mercedes", "Audi", "Toyota", "Honda", "Hyundai", "Kia", "Mahindra",
+  "Tata", "Maruti Suzuki", "Volkswagen",
+  "System X", "Graphene+", "Borophene Apex",
+];
+
+function highlightText(text: string): React.ReactNode {
+  if (!text) return text;
+  const escaped = HIGHLIGHT_KEYWORDS.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const regex = new RegExp(`(${escaped.join('|')})`, 'gi');
+  const parts = text.split(regex);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) =>
+    regex.test(part)
+      ? <mark key={i} className="bg-primary/20 text-foreground px-0.5 rounded-sm">{part}</mark>
+      : part
+  );
 }
 
 const ServiceDetailPage = ({ data }: Props) => {
@@ -67,7 +93,7 @@ const ServiceDetailPage = ({ data }: Props) => {
               {data.aboutTitle}
             </h2>
             <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
-              {data.aboutBody}
+              {highlightText(data.aboutBody)}
             </p>
           </motion.div>
         </div>
@@ -247,7 +273,7 @@ const ServiceDetailPage = ({ data }: Props) => {
               </h2>
               {section.paragraphs.map((p, pi) => (
                 <p key={pi} className="text-muted-foreground leading-relaxed text-base md:text-lg mb-4 last:mb-0">
-                  {p}
+                  {highlightText(p)}
                 </p>
               ))}
               {section.listItems && section.listItems.length > 0 && (
@@ -255,7 +281,7 @@ const ServiceDetailPage = ({ data }: Props) => {
                   {section.listItems.map((item, li) => (
                     <li key={li} className="flex items-center gap-3 text-foreground text-sm">
                       <CheckCircle className="w-4 h-4 text-primary shrink-0" />
-                      {item}
+                      {highlightText(item)}
                     </li>
                   ))}
                 </ul>
