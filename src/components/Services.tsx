@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Droplets, Shield, Atom, Paintbrush, Car, Armchair, Disc3, Wrench, Sparkles, Layers } from "lucide-react";
+import { Droplets, Shield, Atom, Paintbrush, Car, Armchair, Disc3, Wrench, Sparkles, Layers, Waves, Settings, PenTool, Thermometer, Sun } from "lucide-react";
 import { serviceSlugMap } from "@/data/servicePages";
 
 const services = [
