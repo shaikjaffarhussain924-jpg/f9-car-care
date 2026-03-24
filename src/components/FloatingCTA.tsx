@@ -56,6 +56,15 @@ const FloatingCTA = () => {
           </AnimatePresence>
 
           <div className="flex items-center gap-3">
+            <a
+              href="https://wa.me/917032674047?text=I'd%20like%20to%20book%20a%20service"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-[#25D366] text-white px-6 py-4 shadow-lg hover:shadow-xl transition-all text-sm tracking-[0.1em] uppercase font-medium"
+            >
+              <MessageCircle className="w-4 h-4" />
+              WhatsApp
+            </a>
             <Link
               to="/book"
               className="flex items-center gap-3 bg-primary text-primary-foreground px-6 py-4 shadow-[0_0_30px_hsl(45_100%_50%/0.4)] hover:shadow-[0_0_50px_hsl(45_100%_50%/0.5)] transition-all text-sm tracking-[0.1em] uppercase font-medium"
