@@ -67,7 +67,7 @@ const ServiceDetailPage = ({ data }: Props) => {
               {data.aboutTitle}
             </h2>
             <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
-              {highlightText(data.aboutBody)}
+              {data.aboutBody}
             </p>
           </motion.div>
         </div>
