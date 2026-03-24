@@ -79,7 +79,7 @@ const Navbar = () => {
           </a>
           <Link
             to="/book"
-            className="text-xs tracking-[0.12em] uppercase bg-primary text-primary-foreground px-7 py-3 hover:bg-primary/90 transition-all duration-300 font-medium hover:shadow-[0_0_20px_hsl(352_82%_38%/0.3)]"
+            className="text-xs tracking-[0.12em] uppercase bg-primary text-primary-foreground px-7 py-3 hover:bg-primary/90 transition-all duration-300 font-medium hover:shadow-[0_0_20px_hsl(45_100%_50%/0.3)]"
           >
             Book Service
           </Link>

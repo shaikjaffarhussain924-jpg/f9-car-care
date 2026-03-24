@@ -110,7 +110,7 @@ const Services = () => {
                 transition={{ duration: 0.6, delay: i * 0.08 }}
                 className="metallic-card p-8 group cursor-pointer"
               >
-                <div className="w-12 h-12 flex items-center justify-center border border-border bg-background/50 mb-5 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_hsl(352_82%_38%/0.15)] transition-all duration-500">
+                <div className="w-12 h-12 flex items-center justify-center border border-border bg-background/50 mb-5 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_hsl(45_100%_50%/0.15)] transition-all duration-500">
                   <service.icon className="w-6 h-6 text-primary group-hover:scale-110 transition-transform duration-500" />
                 </div>
                 <h3 className="font-heading text-lg font-semibold text-foreground mb-3">

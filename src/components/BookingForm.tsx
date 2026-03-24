@@ -297,7 +297,7 @@ const BookingForm = () => {
                 disabled={isSubmitting}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className="w-full text-sm tracking-[0.15em] uppercase bg-primary text-primary-foreground px-10 py-4 hover:bg-primary/90 transition-all duration-300 font-medium hover:shadow-[0_0_30px_hsl(352_82%_38%/0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full text-sm tracking-[0.15em] uppercase bg-primary text-primary-foreground px-10 py-4 hover:bg-primary/90 transition-all duration-300 font-medium hover:shadow-[0_0_30px_hsl(45_100%_50%/0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
