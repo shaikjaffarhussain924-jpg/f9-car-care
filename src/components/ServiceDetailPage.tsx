@@ -255,7 +255,7 @@ const ServiceDetailPage = ({ data }: Props) => {
                   {section.listItems.map((item, li) => (
                     <li key={li} className="flex items-center gap-3 text-foreground text-sm">
                       <CheckCircle className="w-4 h-4 text-primary shrink-0" />
-                      {highlightText(item)}
+                      {item}
                     </li>
                   ))}
                 </ul>
