@@ -1,11 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { CalendarCheck, MessageCircle, Phone, X } from "lucide-react";
+import { CalendarCheck, MessageCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const FloatingCTA = () => {
   const [visible, setVisible] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const location = useLocation();
   const location = useLocation();
   const isBookPage = location.pathname === "/book";
 
