@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Droplets, Shield, Atom, Paintbrush, Car, Armchair, Disc3, Wrench, Sparkles, Layers } from "lucide-react";
+import { Droplets, Shield, Atom, Paintbrush, Car, Armchair, Disc3, Wrench, Sparkles, Layers, Waves, Settings, PenTool, Thermometer, Sun } from "lucide-react";
 import { serviceSlugMap } from "@/data/servicePages";
 
 const services = [
@@ -49,6 +49,31 @@ const services = [
     title: "Car Restoration",
     description: "Complete vehicle restoration bringing your car back to its original glory with meticulous craftsmanship.",
   },
+  {
+    icon: Waves,
+    title: "Car Washing",
+    description: "Professional exterior and interior car wash services to keep your vehicle spotless and fresh every day.",
+  },
+  {
+    icon: Settings,
+    title: "Car General Services",
+    description: "Routine maintenance and general servicing to keep your car running smoothly and efficiently.",
+  },
+  {
+    icon: PenTool,
+    title: "Car Repair Services",
+    description: "Expert car repair solutions for mechanical and electrical issues with quality parts and skilled technicians.",
+  },
+  {
+    icon: Thermometer,
+    title: "Car AC Repair Services",
+    description: "Complete car AC diagnostics, repair, and gas refilling to keep your cabin cool and comfortable.",
+  },
+  {
+    icon: Sun,
+    title: "Car Sunfilm",
+    description: "Premium sun control films for UV protection, heat reduction, and enhanced privacy for your vehicle.",
+  },
 ];
 
 const Services = () => {
@@ -85,7 +110,7 @@ const Services = () => {
                 transition={{ duration: 0.6, delay: i * 0.08 }}
                 className="metallic-card p-8 group cursor-pointer"
               >
-                <div className="w-12 h-12 flex items-center justify-center border border-border bg-background/50 mb-5 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_hsl(352_82%_38%/0.15)] transition-all duration-500">
+                <div className="w-12 h-12 flex items-center justify-center border border-border bg-background/50 mb-5 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_hsl(45_100%_50%/0.15)] transition-all duration-500">
                   <service.icon className="w-6 h-6 text-primary group-hover:scale-110 transition-transform duration-500" />
                 </div>
                 <h3 className="font-heading text-lg font-semibold text-foreground mb-3">

@@ -53,7 +53,7 @@ const Hero = () => {
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Link
                 to="/book"
-                className="inline-block text-sm tracking-[0.15em] uppercase bg-primary text-primary-foreground px-10 py-4 hover:bg-primary/90 transition-all duration-300 text-center font-medium hover:shadow-[0_0_30px_hsl(352_82%_38%/0.3)]"
+                className="inline-block text-sm tracking-[0.15em] uppercase bg-primary text-primary-foreground px-10 py-4 hover:bg-primary/90 transition-all duration-300 text-center font-medium hover:shadow-[0_0_30px_hsl(45_100%_50%/0.3)]"
               >
                 Book Your Service
               </Link>

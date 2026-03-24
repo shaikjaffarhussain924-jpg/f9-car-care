@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 
@@ -62,6 +62,15 @@ const Navbar = () => {
             )
           )}
           <a
+            href="https://wa.me/917032674047?text=I'd%20like%20to%20book%20a%20service"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs tracking-[0.12em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300 flex items-center gap-1.5"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            WhatsApp
+          </a>
+          <a
             href="tel:+917032674047"
             className="text-xs tracking-[0.12em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300 flex items-center gap-1.5"
           >
@@ -70,7 +79,7 @@ const Navbar = () => {
           </a>
           <Link
             to="/book"
-            className="text-xs tracking-[0.12em] uppercase bg-primary text-primary-foreground px-7 py-3 hover:bg-primary/90 transition-all duration-300 font-medium hover:shadow-[0_0_20px_hsl(352_82%_38%/0.3)]"
+            className="text-xs tracking-[0.12em] uppercase bg-primary text-primary-foreground px-7 py-3 hover:bg-primary/90 transition-all duration-300 font-medium hover:shadow-[0_0_20px_hsl(45_100%_50%/0.3)]"
           >
             Book Service
           </Link>
@@ -114,6 +123,16 @@ const Navbar = () => {
                   </a>
                 )
               )}
+              <a
+                href="https://wa.me/917032674047?text=I'd%20like%20to%20book%20a%20service"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsOpen(false)}
+                className="text-sm tracking-[0.1em] uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" />
+                WhatsApp
+              </a>
               <a
                 href="tel:+917032674047"
                 className="text-sm tracking-[0.1em] uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"

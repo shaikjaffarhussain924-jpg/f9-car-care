@@ -58,7 +58,7 @@ const FloatingCTA = () => {
           <div className="flex items-center gap-3">
             <Link
               to="/book"
-              className="flex items-center gap-3 bg-primary text-primary-foreground px-6 py-4 shadow-[0_0_30px_hsl(352_82%_38%/0.4)] hover:shadow-[0_0_50px_hsl(352_82%_38%/0.5)] transition-all text-sm tracking-[0.1em] uppercase font-medium"
+              className="flex items-center gap-3 bg-primary text-primary-foreground px-6 py-4 shadow-[0_0_30px_hsl(45_100%_50%/0.4)] hover:shadow-[0_0_50px_hsl(45_100%_50%/0.5)] transition-all text-sm tracking-[0.1em] uppercase font-medium"
             >
               <CalendarCheck className="w-4 h-4" />
               Book Now

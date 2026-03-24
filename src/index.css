@@ -15,8 +15,8 @@
     --popover: 0 0% 7%;
     --popover-foreground: 0 0% 96.1%;
 
-    --primary: 352 82% 38%;
-    --primary-foreground: 0 0% 96.1%;
+    --primary: 45 100% 50%;
+    --primary-foreground: 0 0% 8%;
 
     --secondary: 0 0% 11%;
     --secondary-foreground: 0 0% 96.1%;
@@ -24,15 +24,15 @@
     --muted: 0 0% 14%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 352 82% 38%;
-    --accent-foreground: 0 0% 96.1%;
+    --accent: 45 100% 50%;
+    --accent-foreground: 0 0% 8%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 96.1%;
 
     --border: 0 0% 16%;
     --input: 0 0% 16%;
-    --ring: 352 82% 38%;
+    --ring: 45 100% 50%;
 
     --radius: 0.25rem;
 
@@ -40,7 +40,7 @@
     --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
 
     --metallic-gradient: linear-gradient(135deg, hsl(0 0% 20%) 0%, hsl(0 0% 8%) 50%, hsl(0 0% 14%) 100%);
-    --red-glow: 0 0 40px hsl(352 82% 38% / 0.3);
+    --red-glow: 0 0 40px hsl(45 100% 50% / 0.3);
     --card-shadow: 0 4px 24px hsl(0 0% 0% / 0.5);
     --card-hover-shadow: 0 8px 40px hsl(0 0% 0% / 0.7);
   }
