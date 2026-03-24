@@ -6,7 +6,6 @@ import { Link, useLocation } from "react-router-dom";
 const FloatingCTA = () => {
   const [visible, setVisible] = useState(false);
   const location = useLocation();
-  const location = useLocation();
   const isBookPage = location.pathname === "/book";
 
   useEffect(() => {
