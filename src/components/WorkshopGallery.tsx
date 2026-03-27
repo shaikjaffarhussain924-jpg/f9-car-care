@@ -42,25 +42,30 @@ const WorkshopGallery = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {images.map((img, i) => (
-            <motion.div
-              key={img.alt}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: i * 0.15 }}
-              className="overflow-hidden group"
-            >
-              <img
-                src={img.src}
-                alt={img.alt}
-                loading="lazy"
-                className="w-full h-72 md:h-96 object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-            </motion.div>
-          ))}
-        </div>
+        <Carousel opts={{ align: "start", loop: true }} className="w-full">
+          <CarouselContent className="-ml-4">
+            {images.map((img, i) => (
+              <CarouselItem key={img.alt} className="pl-4 md:basis-1/3">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, delay: i * 0.1 }}
+                  className="overflow-hidden group"
+                >
+                  <img
+                    src={img.src}
+                    alt={img.alt}
+                    loading="lazy"
+                    className="w-full h-72 md:h-96 object-cover transition-transform duration-700 group-hover:scale-105 rounded-lg"
+                  />
+                </motion.div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="-left-4 md:-left-12" />
+          <CarouselNext className="-right-4 md:-right-12" />
+        </Carousel>
       </div>
     </section>
   );
