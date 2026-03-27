@@ -1,12 +1,25 @@
 import { motion } from "framer-motion";
-import workshop1 from "@/assets/workshop-1.jpg";
-import workshop2 from "@/assets/workshop-2.jpg";
-import workshop3 from "@/assets/workshop-3.jpg";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from "@/components/ui/carousel";
+import gallery1 from "@/assets/gallery-1.webp";
+import gallery2 from "@/assets/gallery-2.webp";
+import gallery3 from "@/assets/gallery-3.webp";
+import gallery4 from "@/assets/gallery-4.webp";
+import gallery5 from "@/assets/gallery-5.webp";
+import gallery6 from "@/assets/gallery-6.webp";
 
 const images = [
-  { src: workshop1, alt: "Luxury Porsche in premium workshop" },
-  { src: workshop2, alt: "Engine diagnostics on Mercedes-Benz" },
-  { src: workshop3, alt: "Ceramic coating on BMW M4" },
+  { src: gallery1, alt: "F9 Car Care studio front with BMW" },
+  { src: gallery2, alt: "Matte black Skoda Kushaq wrap at F9" },
+  { src: gallery3, alt: "BYD with Garware PPF at F9 studio" },
+  { src: gallery4, alt: "Red car denting and painting work at F9" },
+  { src: gallery5, alt: "Skoda Kushaq ceramic coating at F9" },
+  { src: gallery6, alt: "Red BYD at F9 Car Care entrance" },
 ];
 
 const WorkshopGallery = () => {
