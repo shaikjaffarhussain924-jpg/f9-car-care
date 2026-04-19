@@ -1,8 +1,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, CheckCircle, ArrowLeft, AlertCircle } from "lucide-react";
+import { MessageCircle, CheckCircle, ArrowLeft, AlertCircle, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const carBrands = ["BMW", "Mercedes-Benz", "Audi", "Porsche", "Range Rover", "Jaguar", "Hyundai", "Maruti Suzuki", "Toyota", "Honda", "Tata", "Mahindra", "Kia", "MG", "Skoda", "Volkswagen", "Other"];
 
