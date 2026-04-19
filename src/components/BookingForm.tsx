@@ -299,7 +299,7 @@ const BookingForm = () => {
                         <SelectTrigger id="service">
                           <SelectValue placeholder="Select a service" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false}>
                           {serviceTypes.map((s) => (
                             <SelectItem key={s} value={s}>
                               {s}
