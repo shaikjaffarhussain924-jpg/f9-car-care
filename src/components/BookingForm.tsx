@@ -18,6 +18,7 @@ const serviceTypes = [
   "Nano Coating",
   "Ceramic Coating",
   "PPF (Paint Protection Film)",
+  "Sun Film",
   "Car Seat Covers",
   "Car Floor Matting",
   "Car Denting",
