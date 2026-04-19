@@ -269,7 +269,7 @@ const BookingForm = () => {
                           <SelectTrigger id="brand">
                             <SelectValue placeholder="Select brand" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false}>
                             {carBrands.map((b) => (
                               <SelectItem key={b} value={b}>
                                 {b}
