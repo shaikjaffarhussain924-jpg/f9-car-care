@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Check, Loader2, ArrowLeft, MessageCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Loader2, ArrowLeft, MessageCircle, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -312,13 +315,38 @@ const BookingForm = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <motion.div variants={fadeInUp} className="space-y-2">
                         <Label htmlFor="date">Preferred Date</Label>
-                        <Input
-                          id="date"
-                          type="date"
-                          min={today}
-                          value={form.date}
-                          onChange={(e) => updateField("date", e.target.value)}
-                        />
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              id="date"
+                              type="button"
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !form.date && "text-muted-foreground",
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {form.date ? format(new Date(form.date), "PPP") : <span>Pick a date</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={form.date ? new Date(form.date) : undefined}
+                              onSelect={(d) =>
+                                updateField("date", d ? format(d, "yyyy-MM-dd") : "")
+                              }
+                              disabled={(d) => {
+                                const t = new Date();
+                                t.setHours(0, 0, 0, 0);
+                                return d < t;
+                              }}
+                              initialFocus
+                              className={cn("p-3 pointer-events-auto")}
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </motion.div>
                       <motion.div variants={fadeInUp} className="space-y-2">
                         <Label htmlFor="time">Preferred Time</Label>
