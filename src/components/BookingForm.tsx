@@ -1,16 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, CheckCircle, ArrowLeft, AlertCircle, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Loader2, ArrowLeft, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
-const carBrands = ["BMW", "Mercedes-Benz", "Audi", "Porsche", "Range Rover", "Jaguar", "Hyundai", "Maruti Suzuki", "Toyota", "Honda", "Tata", "Mahindra", "Kia", "MG", "Skoda", "Volkswagen", "Other"];
+const carBrands = [
+  "BMW", "Mercedes-Benz", "Audi", "Porsche", "Range Rover", "Jaguar",
+  "Hyundai", "Maruti Suzuki", "Toyota", "Honda", "Tata", "Mahindra",
+  "Kia", "MG", "Skoda", "Volkswagen", "Other",
+];
 
 const serviceTypes = [
   "Deep Interior Wash",
@@ -26,13 +43,50 @@ const serviceTypes = [
   "Car Restoration",
 ];
 
-type FormErrors = Partial<Record<string, string>>;
+const steps = [
+  { id: "booking", title: "Booking Details" },
+  { id: "confirmation", title: "Confirmation" },
+];
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
+
+const contentVariants = {
+  hidden: { opacity: 0, x: 50 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+  exit: { opacity: 0, x: -50, transition: { duration: 0.2 } },
+};
+
+const WHATSAPP_NUMBER = "917032674047";
+
+const buildWhatsAppUrl = (form: {
+  name: string;
+  phone: string;
+  brand: string;
+  model: string;
+  service: string;
+  date: string;
+  time: string;
+}) => {
+  const message =
+    `Hi F9 Car Care, I'd like to book an appointment.%0A%0A` +
+    `*Name:* ${form.name}%0A` +
+    `*Phone:* ${form.phone}%0A` +
+    `*Car:* ${form.brand} ${form.model}%0A` +
+    `*Service:* ${form.service}%0A` +
+    `*Date:* ${form.date}%0A` +
+    `*Time:* ${form.time}`;
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+};
 
 const BookingForm = () => {
   const { toast } = useToast();
-  const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState(3);
+
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -43,89 +97,54 @@ const BookingForm = () => {
     time: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: undefined });
-    }
+  const updateField = (field: keyof typeof form, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const validate = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    if (!form.name.trim() || form.name.trim().length < 2) {
-      newErrors.name = "Please enter your full name";
+  const isStepValid = () => {
+    if (currentStep === 0) {
+      const phoneClean = form.phone.replace(/\D/g, "");
+      return (
+        form.name.trim().length >= 2 &&
+        phoneClean.length >= 10 &&
+        form.brand !== "" &&
+        form.model.trim() !== "" &&
+        form.service !== "" &&
+        form.date !== "" &&
+        form.time !== ""
+      );
     }
-
-    const phoneClean = form.phone.replace(/\D/g, "");
-    if (!phoneClean || phoneClean.length < 10) {
-      newErrors.phone = "Please enter a valid 10-digit phone number";
-    }
-
-    if (!form.brand) newErrors.brand = "Please select your car brand";
-    if (!form.model.trim()) newErrors.model = "Please enter your car model";
-    if (!form.service) newErrors.service = "Please select a service";
-
-    if (!form.date) {
-      newErrors.date = "Please select a date";
-    } else {
-      const selected = new Date(form.date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (selected < today) newErrors.date = "Date cannot be in the past";
-    }
-
-    if (!form.time) newErrors.time = "Please select a time";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) {
-      toast({
-        title: "Please fix the errors",
-        description: "Some fields need your attention.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleSubmit = async () => {
     setIsSubmitting(true);
-
-    // Simulate submission delay
-    await new Promise((r) => setTimeout(r, 1500));
-
+    await new Promise((r) => setTimeout(r, 1200));
     setIsSubmitting(false);
-    setSubmitted(true);
-
+    setCurrentStep(1);
     toast({
       title: "Appointment Reserved! ✓",
-      description: "Our team will confirm within 2 hours.",
+      description: "Redirecting you to WhatsApp...",
     });
   };
 
+  // Auto-redirect to WhatsApp once on confirmation step
+  useEffect(() => {
+    if (currentStep !== 1) return;
+    setRedirectCountdown(3);
+    const interval = setInterval(() => {
+      setRedirectCountdown((c) => (c > 0 ? c - 1 : 0));
+    }, 1000);
+    const timeout = setTimeout(() => {
+      window.open(buildWhatsAppUrl(form), "_blank", "noopener,noreferrer");
+    }, 3000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [currentStep, form]);
+
   const today = new Date().toISOString().split("T")[0];
-
-  const inputClasses = (field: string) =>
-    `w-full bg-secondary border ${errors[field] ? "border-destructive" : "border-border"} text-foreground px-4 py-3.5 text-sm focus:outline-none focus:border-primary/60 transition-all placeholder:text-muted-foreground font-body`;
-
-  const selectClasses = (field: string) =>
-    `w-full bg-secondary border ${errors[field] ? "border-destructive" : "border-border"} text-foreground px-4 py-3.5 text-sm focus:outline-none focus:border-primary/60 transition-all appearance-none font-body`;
-
-  const ErrorMsg = ({ field }: { field: string }) =>
-    errors[field] ? (
-      <motion.p
-        initial={{ opacity: 0, y: -4 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-destructive text-xs mt-1 flex items-center gap-1"
-      >
-        <AlertCircle className="w-3 h-3" />
-        {errors[field]}
-      </motion.p>
-    ) : null;
 
   return (
     <section className="section-padding bg-background min-h-[calc(100vh-5rem)]">
@@ -133,12 +152,12 @@ const BookingForm = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="mb-12"
+          transition={{ duration: 0.6 }}
+          className="mb-10"
         >
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-xs tracking-[0.12em] uppercase text-muted-foreground hover:text-foreground transition-colors mb-10"
+            className="inline-flex items-center gap-2 text-xs tracking-[0.12em] uppercase text-muted-foreground hover:text-foreground transition-colors mb-8"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
@@ -146,212 +165,278 @@ const BookingForm = () => {
 
           <div className="text-center">
             <div className="luxury-divider mb-6" />
-            <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
+            <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground mb-3 tracking-tight">
               Book Your Car Service
             </h2>
-            <p className="text-muted-foreground text-lg max-w-md mx-auto">
-              Experience concierge-level automotive care. We'll confirm within 2 hours.
+            <p className="text-muted-foreground text-base md:text-lg max-w-md mx-auto">
+              Reserve in two simple steps. We'll connect on WhatsApp instantly.
             </p>
           </div>
         </motion.div>
 
-        <AnimatePresence mode="wait">
-          {submitted ? (
+        {/* Progress indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex flex-col items-center flex-1">
+                <motion.button
+                  type="button"
+                  onClick={() => {
+                    if (index < currentStep) setCurrentStep(index);
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  className={cn(
+                    "w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-medium transition-colors",
+                    index < currentStep
+                      ? "bg-primary border-primary text-primary-foreground"
+                      : index === currentStep
+                      ? "border-primary text-primary"
+                      : "border-border text-muted-foreground",
+                  )}
+                >
+                  {index < currentStep ? <Check className="w-4 h-4" /> : index + 1}
+                </motion.button>
+                <span
+                  className={cn(
+                    "mt-2 text-xs tracking-wide uppercase",
+                    index === currentStep ? "text-foreground" : "text-muted-foreground",
+                  )}
+                >
+                  {step.title}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
             <motion.div
-              key="success"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="metallic-card p-12 text-center"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-              >
-                <CheckCircle className="w-16 h-16 text-primary mx-auto mb-6" />
-              </motion.div>
-              <h3 className="font-heading text-2xl font-bold text-foreground mb-3">
-                Appointment Reserved!
-              </h3>
-              <p className="text-muted-foreground mb-3">
-                Our concierge team will confirm your appointment within 2 hours.
-              </p>
-              <p className="text-sm text-muted-foreground mb-8">
-                For immediate assistance, call{" "}
-                <a href="tel:+917032674047" className="text-primary hover:text-primary/80 transition-colors">
-                  +91 70326 74047
-                </a>
-              </p>
-              <button
-                onClick={() => {
-                  setSubmitted(false);
-                  setForm({ name: "", phone: "", brand: "", model: "", service: "", date: "", time: "" });
-                }}
-                className="text-xs tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors font-medium"
-              >
-                Book Another Service →
-              </button>
-            </motion.div>
-          ) : (
-            <motion.form
-              key="form"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              onSubmit={handleSubmit}
-              className="metallic-card p-8 md:p-12"
-              noValidate
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-                <div>
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Full Name"
-                    maxLength={100}
-                    value={form.name}
-                    onChange={handleChange}
-                    className={inputClasses("name")}
-                  />
-                  <ErrorMsg field="name" />
-                </div>
-                <div>
-                  <input
-                    type="tel"
-                    name="phone"
-                    placeholder="Phone Number"
-                    maxLength={15}
-                    value={form.phone}
-                    onChange={handleChange}
-                    className={inputClasses("phone")}
-                  />
-                  <ErrorMsg field="phone" />
-                </div>
-              </div>
+              className="h-full bg-primary"
+              initial={{ width: "0%" }}
+              animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+              transition={{ duration: 0.4 }}
+            />
+          </div>
+        </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-                <div>
-                  <select
-                    name="brand"
-                    value={form.brand}
-                    onChange={handleChange}
-                    className={selectClasses("brand")}
-                  >
-                    <option value="" disabled>Car Brand</option>
-                    {carBrands.map((b) => (
-                      <option key={b} value={b}>{b}</option>
-                    ))}
-                  </select>
-                  <ErrorMsg field="brand" />
-                </div>
-                <div>
-                  <input
-                    type="text"
-                    name="model"
-                    placeholder="Car Model (e.g. Creta, 3 Series)"
-                    maxLength={50}
-                    value={form.model}
-                    onChange={handleChange}
-                    className={inputClasses("model")}
-                  />
-                  <ErrorMsg field="model" />
-                </div>
-              </div>
+        <Card>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              variants={contentVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {currentStep === 0 && (
+                <>
+                  <CardHeader>
+                    <CardTitle>Booking Details</CardTitle>
+                    <CardDescription>
+                      Tell us about your car and the service you need.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <motion.div variants={fadeInUp} className="space-y-2">
+                        <Label htmlFor="name">Full Name</Label>
+                        <Input
+                          id="name"
+                          placeholder="Your name"
+                          maxLength={100}
+                          value={form.name}
+                          onChange={(e) => updateField("name", e.target.value)}
+                        />
+                      </motion.div>
+                      <motion.div variants={fadeInUp} className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="10-digit mobile number"
+                          maxLength={15}
+                          value={form.phone}
+                          onChange={(e) => updateField("phone", e.target.value)}
+                        />
+                      </motion.div>
+                    </div>
 
-              <div className="mb-5">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      className={`${selectClasses("service")} flex items-center justify-between text-left`}
-                    >
-                      <span className={form.service ? "text-foreground" : "text-muted-foreground"}>
-                        {form.service || "Select Service"}
-                      </span>
-                      <ChevronDown className="w-4 h-4 opacity-60 shrink-0 ml-2" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="start"
-                    className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-72 overflow-y-auto"
-                  >
-                    {serviceTypes.map((s) => (
-                      <DropdownMenuItem
-                        key={s}
-                        onSelect={() => {
-                          setForm({ ...form, service: s });
-                          if (errors.service) setErrors({ ...errors, service: undefined });
-                        }}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <motion.div variants={fadeInUp} className="space-y-2">
+                        <Label htmlFor="brand">Car Brand</Label>
+                        <Select
+                          value={form.brand}
+                          onValueChange={(v) => updateField("brand", v)}
+                        >
+                          <SelectTrigger id="brand">
+                            <SelectValue placeholder="Select brand" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {carBrands.map((b) => (
+                              <SelectItem key={b} value={b}>
+                                {b}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </motion.div>
+                      <motion.div variants={fadeInUp} className="space-y-2">
+                        <Label htmlFor="model">Car Model</Label>
+                        <Input
+                          id="model"
+                          placeholder="e.g. Creta, 3 Series"
+                          maxLength={50}
+                          value={form.model}
+                          onChange={(e) => updateField("model", e.target.value)}
+                        />
+                      </motion.div>
+                    </div>
+
+                    <motion.div variants={fadeInUp} className="space-y-2">
+                      <Label htmlFor="service">Service</Label>
+                      <Select
+                        value={form.service}
+                        onValueChange={(v) => updateField("service", v)}
                       >
-                        {s}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <ErrorMsg field="service" />
-              </div>
+                        <SelectTrigger id="service">
+                          <SelectValue placeholder="Select a service" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {serviceTypes.map((s) => (
+                            <SelectItem key={s} value={s}>
+                              {s}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </motion.div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-                <div>
-                  <input
-                    type="date"
-                    name="date"
-                    min={today}
-                    value={form.date}
-                    onChange={handleChange}
-                    className={inputClasses("date")}
-                  />
-                  <ErrorMsg field="date" />
-                </div>
-                <div>
-                  <input
-                    type="time"
-                    name="time"
-                    value={form.time}
-                    onChange={handleChange}
-                    className={inputClasses("time")}
-                  />
-                  <ErrorMsg field="time" />
-                </div>
-              </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <motion.div variants={fadeInUp} className="space-y-2">
+                        <Label htmlFor="date">Preferred Date</Label>
+                        <Input
+                          id="date"
+                          type="date"
+                          min={today}
+                          value={form.date}
+                          onChange={(e) => updateField("date", e.target.value)}
+                        />
+                      </motion.div>
+                      <motion.div variants={fadeInUp} className="space-y-2">
+                        <Label htmlFor="time">Preferred Time</Label>
+                        <Input
+                          id="time"
+                          type="time"
+                          value={form.time}
+                          onChange={(e) => updateField("time", e.target.value)}
+                        />
+                      </motion.div>
+                    </div>
+                  </CardContent>
+                </>
+              )}
 
-              <motion.button
-                type="submit"
-                disabled={isSubmitting}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                className="w-full text-sm tracking-[0.15em] uppercase bg-primary text-primary-foreground px-10 py-4 hover:bg-primary/90 transition-all duration-300 font-medium hover:shadow-[0_0_30px_hsl(45_100%_50%/0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
+              {currentStep === 1 && (
+                <>
+                  <CardHeader>
+                    <CardTitle>Appointment Reserved</CardTitle>
+                    <CardDescription>
+                      Redirecting you to WhatsApp to finalize with our team
+                      {redirectCountdown > 0 ? ` in ${redirectCountdown}s...` : "..."}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+                      className="flex justify-center"
+                    >
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Check className="w-8 h-8 text-primary" />
+                      </div>
+                    </motion.div>
+
+                    <div className="rounded-lg border border-border bg-secondary/40 p-5 space-y-2 text-sm">
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">Name</span>
+                        <span className="text-foreground font-medium">{form.name}</span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">Phone</span>
+                        <span className="text-foreground font-medium">{form.phone}</span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">Car</span>
+                        <span className="text-foreground font-medium">
+                          {form.brand} {form.model}
+                        </span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">Service</span>
+                        <span className="text-foreground font-medium">{form.service}</span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">When</span>
+                        <span className="text-foreground font-medium">
+                          {form.date} · {form.time}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Opening WhatsApp...
+                    </div>
+
+                    <div className="text-center">
+                      <a
+                        href={buildWhatsAppUrl(form)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        Tap here if WhatsApp didn't open
+                      </a>
+                    </div>
+                  </CardContent>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          {currentStep === 0 && (
+            <CardFooter className="flex justify-between pt-2 pb-6">
+              <Button type="button" variant="outline" disabled className="gap-1">
+                <ChevronLeft className="h-4 w-4" /> Back
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!isStepValid() || isSubmitting}
+                className="gap-1"
               >
                 {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <motion.span
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="inline-block w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full"
-                    />
-                    Reserving...
-                  </span>
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Reserving...
+                  </>
                 ) : (
-                  "Reserve Appointment"
+                  <>
+                    Confirm Booking <ChevronRight className="h-4 w-4" />
+                  </>
                 )}
-              </motion.button>
-
-              <div className="mt-6 pt-6 border-t border-border text-center">
-                <a
-                  href="https://wa.me/917032674047?text=I'd%20like%20to%20book%20a%20service%20appointment"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  Or book via WhatsApp Concierge
-                </a>
-              </div>
-            </motion.form>
+              </Button>
+            </CardFooter>
           )}
-        </AnimatePresence>
+        </Card>
+
+        <motion.div
+          className="mt-4 text-center text-sm text-muted-foreground"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
+        </motion.div>
       </div>
     </section>
   );
