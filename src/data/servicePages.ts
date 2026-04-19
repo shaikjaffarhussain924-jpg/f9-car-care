@@ -2997,7 +2997,6 @@ Your car deserves better than oxidized paint, ignored dents, and the quiet embar
 ---
 `,
   },
-  },
   {
     slug: "car-sunfilm",
     titleTag: "Car Sun Film Services in Hyderabad | F9 Car Care",
