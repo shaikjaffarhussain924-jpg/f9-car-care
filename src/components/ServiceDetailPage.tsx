@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowLeft, CheckCircle, Phone } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import RawMarkdown from "@/components/RawMarkdown";
 import type { ServicePageData } from "@/data/servicePages";
 
 interface Props {
@@ -16,6 +17,49 @@ const ServiceDetailPage = ({ data }: Props) => {
     if (meta) meta.setAttribute("content", data.metaDescription);
     window.scrollTo(0, 0);
   }, [data]);
+
+  if (data.rawContent) {
+    return (
+      <div className="pt-20">
+        <section className="section-padding bg-background">
+          <div className="max-w-3xl mx-auto">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-xs tracking-[0.12em] uppercase text-muted-foreground hover:text-foreground transition-colors mb-10"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </Link>
+            <RawMarkdown source={data.rawContent} />
+          </div>
+        </section>
+
+        <section className="bg-primary py-16 md:py-20 px-6 md:px-12">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="font-heading text-2xl md:text-4xl font-bold text-primary-foreground mb-4">
+              {data.ctaHeading}
+            </h2>
+            <p className="text-primary-foreground/80 text-lg mb-8">{data.ctaSubtext}</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                to={data.ctaButton1Link}
+                className="text-xs tracking-[0.15em] uppercase bg-primary-foreground text-primary px-8 py-4 hover:bg-primary-foreground/90 transition-all font-medium inline-flex items-center gap-2"
+              >
+                {data.ctaButton1} →
+              </Link>
+              <a
+                href="tel:+917032674047"
+                className="text-xs tracking-[0.15em] uppercase border border-primary-foreground/50 text-primary-foreground px-8 py-4 hover:bg-primary-foreground/10 transition-all font-medium inline-flex items-center gap-2"
+              >
+                <Phone className="w-4 h-4" />
+                {data.ctaButton2}
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-20">
