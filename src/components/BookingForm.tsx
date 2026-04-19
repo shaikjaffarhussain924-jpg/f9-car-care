@@ -74,14 +74,25 @@ const buildWhatsAppUrl = (form: {
   time: string;
 }) => {
   const message =
-    `Hi F9 Car Care, I'd like to book an appointment.%0A%0A` +
-    `*Name:* ${form.name}%0A` +
-    `*Phone:* ${form.phone}%0A` +
-    `*Car:* ${form.brand} ${form.model}%0A` +
-    `*Service:* ${form.service}%0A` +
-    `*Date:* ${form.date}%0A` +
+    `Hi F9 Car Care, I'd like to book an appointment.\n\n` +
+    `*Name:* ${form.name}\n` +
+    `*Phone:* ${form.phone}\n` +
+    `*Car:* ${form.brand} ${form.model}\n` +
+    `*Service:* ${form.service}\n` +
+    `*Date:* ${form.date}\n` +
     `*Time:* ${form.time}`;
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+  return `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
+};
+
+const openWhatsApp = (url: string) => {
+  // Break out of the preview iframe so WhatsApp doesn't get blocked by X-Frame-Options
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 };
 
 const BookingForm = () => {
@@ -139,7 +150,7 @@ const BookingForm = () => {
       setRedirectCountdown((c) => (c > 0 ? c - 1 : 0));
     }, 1000);
     const timeout = setTimeout(() => {
-      window.open(buildWhatsAppUrl(form), "_blank", "noopener,noreferrer");
+      openWhatsApp(buildWhatsAppUrl(form));
     }, 3000);
     return () => {
       clearInterval(interval);
