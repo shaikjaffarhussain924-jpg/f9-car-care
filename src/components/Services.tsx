@@ -35,11 +35,6 @@ const services = [
     description: "Custom-fit premium seat covers designed to protect and elevate your vehicle's interior aesthetics.",
   },
   {
-    icon: Car,
-    title: "Car Floor Matting",
-    description: "Precision-cut floor mats for complete protection of your vehicle's interior flooring.",
-  },
-  {
     icon: Wrench,
     title: "Car Denting & Painting",
     description: "Expert denting removal and factory-grade painting with showroom-quality finish and color matching.",
@@ -57,17 +52,7 @@ const services = [
   {
     icon: Settings,
     title: "Car General Services",
-    description: "Routine maintenance and general servicing to keep your car running smoothly and efficiently.",
-  },
-  {
-    icon: PenTool,
-    title: "Car Repair Services",
-    description: "Expert car repair solutions for mechanical and electrical issues with quality parts and skilled technicians.",
-  },
-  {
-    icon: Thermometer,
-    title: "Car AC Repair Services",
-    description: "Complete car AC diagnostics, repair, and gas refilling to keep your cabin cool and comfortable.",
+    description: "Complete general servicing including floor matting, mechanical & electrical repairs, and AC diagnostics — all under one roof.",
   },
   {
     icon: Sun,
