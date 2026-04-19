@@ -1,8 +1,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, CheckCircle, ArrowLeft, AlertCircle } from "lucide-react";
+import { MessageCircle, CheckCircle, ArrowLeft, AlertCircle, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const carBrands = ["BMW", "Mercedes-Benz", "Audi", "Porsche", "Range Rover", "Jaguar", "Hyundai", "Maruti Suzuki", "Toyota", "Honda", "Tata", "Mahindra", "Kia", "MG", "Skoda", "Volkswagen", "Other"];
 
@@ -12,6 +18,7 @@ const serviceTypes = [
   "Nano Coating",
   "Ceramic Coating",
   "PPF (Paint Protection Film)",
+  "Sun Film",
   "Car Seat Covers",
   "Car Floor Matting",
   "Car Denting",
@@ -254,17 +261,35 @@ const BookingForm = () => {
               </div>
 
               <div className="mb-5">
-                <select
-                  name="service"
-                  value={form.service}
-                  onChange={handleChange}
-                  className={selectClasses("service")}
-                >
-                  <option value="" disabled>Select Service</option>
-                  {serviceTypes.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className={`${selectClasses("service")} flex items-center justify-between text-left`}
+                    >
+                      <span className={form.service ? "text-foreground" : "text-muted-foreground"}>
+                        {form.service || "Select Service"}
+                      </span>
+                      <ChevronDown className="w-4 h-4 opacity-60 shrink-0 ml-2" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-72 overflow-y-auto"
+                  >
+                    {serviceTypes.map((s) => (
+                      <DropdownMenuItem
+                        key={s}
+                        onSelect={() => {
+                          setForm({ ...form, service: s });
+                          if (errors.service) setErrors({ ...errors, service: undefined });
+                        }}
+                      >
+                        {s}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <ErrorMsg field="service" />
               </div>
 
