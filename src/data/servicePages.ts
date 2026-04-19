@@ -83,6 +83,7 @@ export interface ServicePageData {
   ctaButton1: string;
   ctaButton1Link: string;
   ctaButton2: string;
+  rawContent?: string;
 }
 
 export const servicePages: ServicePageData[] = [
