@@ -3769,6 +3769,31 @@ Your car deserves better than oxidized paint, ignored dents, and the quiet embar
     ctaButton1Link: "/book",
     ctaButton2: "Call: 70326 74047",
   },
+  {
+    slug: "car-general-service",
+    titleTag: "Car General Service in Hyderabad | F9 Car Care",
+    metaDescription: "F9 Car Care offers complete car general service in Hyderabad — floor matting, mechanical repair, and AC repair under one roof. Call +91 70326 74047.",
+    h1: "Car General Service in Hyderabad",
+    subheading: "Floor Matting, Mechanical Repair, and AC Repair — all under one roof at F9 Car Care.",
+    tags: [],
+    aboutTitle: "",
+    aboutBody: "",
+    benefitsTitle: "",
+    benefits: [],
+    pricingTitle: "",
+    pricing: [],
+    faqTitle: "",
+    faqs: [],
+    ctaHeading: "Book Your Car General Service Today",
+    ctaSubtext: "Floor matting, repair, or AC service — F9 Car Care has you covered.",
+    ctaButton1: "Book Service",
+    ctaButton1Link: "/book",
+    ctaButton2: "Call: 70326 74047",
+    rawContent: `# Car General Service in Hyderabad
+
+_Paste your markdown content here. Sections for Car Floor Matting, Car Repair Services, and Car AC Repair Services will all live on this page._
+`,
+  },
 ];
 
 // Map service titles to slugs for linking from homepage
@@ -3779,12 +3804,12 @@ export const serviceSlugMap: Record<string, string> = {
   "Ceramic Coating": "ceramic-coating",
   "PPF (Paint Protection Film)": "ppf",
   "Car Seat Covers": "car-seat-covers",
-  "Car Floor Matting": "",
+  "Car Floor Matting": "car-general-service",
   "Car Denting & Painting": "car-denting-painting",
   "Car Restoration": "car-restoration",
   "Car Washing": "car-washing-painting",
-  "Car General Services": "",
-  "Car Repair Services": "",
-  "Car AC Repair Services": "",
+  "Car General Services": "car-general-service",
+  "Car Repair Services": "car-general-service",
+  "Car AC Repair Services": "car-general-service",
   "Car Sunfilm": "car-sunfilm",
 };
