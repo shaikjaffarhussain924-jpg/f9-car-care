@@ -150,7 +150,7 @@ const BookingForm = () => {
       setRedirectCountdown((c) => (c > 0 ? c - 1 : 0));
     }, 1000);
     const timeout = setTimeout(() => {
-      window.open(buildWhatsAppUrl(form), "_blank", "noopener,noreferrer");
+      openWhatsApp(buildWhatsAppUrl(form));
     }, 3000);
     return () => {
       clearInterval(interval);
