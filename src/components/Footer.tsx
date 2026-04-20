@@ -45,6 +45,9 @@ const Footer = () => {
                   <a href={`/#${s.toLowerCase()}`} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{s}</a>
                 </li>
               ))}
+              <li>
+                <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
+              </li>
             </ul>
           </div>
 
