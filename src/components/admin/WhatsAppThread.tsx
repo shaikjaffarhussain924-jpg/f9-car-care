@@ -144,7 +144,16 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
         </div>
         <div className="flex-1 min-w-0">
           <div className="font-medium text-[15px] truncate leading-tight">{displayName}</div>
-          <div className="text-[12px] text-white/75 truncate">+{phone.replace(/\D/g, "")} · online</div>
+          <div className="text-[12px] text-white/75 truncate flex items-center gap-1.5">
+            <span>+{phone.replace(/\D/g, "")}</span>
+            <span className="inline-flex items-center gap-1">
+              <span className="relative flex w-1.5 h-1.5">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+              </span>
+              online
+            </span>
+          </div>
         </div>
         <button className="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Call">
           <Phone className="w-5 h-5" />

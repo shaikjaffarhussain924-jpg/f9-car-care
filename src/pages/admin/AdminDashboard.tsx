@@ -4,6 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Calendar, MessageSquare, Clock, TrendingUp, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCountUp } from "@/hooks/useCountUp";
+
+function StatNumber({ value }: { value: number }) {
+  const display = useCountUp(value);
+  return <>{display}</>;
+}
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -144,9 +150,9 @@ export default function AdminDashboard() {
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: 0.15 + i * 0.07, type: "spring", stiffness: 200 }}
-                        className="text-4xl font-bold tracking-tight"
+                        className="text-4xl font-bold tracking-tight tabular-nums"
                       >
-                        {c.value}
+                        <StatNumber value={c.value} />
                       </motion.div>
                     </CardContent>
                   </Card>
