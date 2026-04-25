@@ -94,14 +94,19 @@ export default function AdminContacts() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-heading text-3xl font-bold">Contacts</h1>
+      <div className="flex items-center justify-between mb-6 animate-fade-in">
+        <div>
+          <h1 className="font-heading text-3xl font-bold tracking-tight">Contacts</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {filtered.length} {filtered.length === 1 ? "message" : "messages"}
+          </p>
+        </div>
         <div className="flex gap-2">
           <Input
             placeholder="Search name / phone / email"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-64"
+            className="w-64 transition-all focus:w-72"
           />
           <Select value={filter} onValueChange={(v) => setFilter(v as Status | "all")}>
             <SelectTrigger className="w-40">
