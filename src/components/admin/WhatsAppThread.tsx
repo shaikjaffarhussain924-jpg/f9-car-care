@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Send, Check, CheckCheck, AlertCircle, Phone, MoreVertical, Smile, Paperclip } from "lucide-react";
+import { Loader2, Send, Check, CheckCheck, AlertCircle, Phone, MoreVertical, Smile, Paperclip, Maximize2, Minimize2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday, isYesterday } from "date-fns";
