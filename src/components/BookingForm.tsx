@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const carBrands = [
   "BMW", "Mercedes-Benz", "Audi", "Porsche", "Range Rover", "Jaguar",
@@ -133,8 +134,24 @@ const BookingForm = () => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1200));
+    const { error } = await supabase.from("appointments").insert({
+      name: form.name.trim(),
+      phone: form.phone.trim(),
+      service: `${form.service} — ${form.brand} ${form.model}`.trim(),
+      preferred_date: form.date || null,
+      preferred_time: form.time || null,
+      message: `Brand: ${form.brand}, Model: ${form.model}`,
+      source: "website-booking",
+    });
     setIsSubmitting(false);
+    if (error) {
+      toast({
+        title: "Could not save booking",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
     setCurrentStep(1);
     toast({
       title: "Appointment Reserved! ✓",
