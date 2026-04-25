@@ -217,6 +217,110 @@ export default function AdminDashboard() {
             })}
           </div>
 
+          {/* Charts row */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.4 }}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-10"
+          >
+            <Card className="lg:col-span-2 border-border/60">
+              <CardHeader className="flex flex-row items-center gap-2 pb-2">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <CardTitle className="text-sm font-semibold">Bookings — last 30 days</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={bookingsChartConfig} className="h-[260px] w-full">
+                  <AreaChart data={bookingsOverTime} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="fillBookings" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.5} />
+                        <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(v: string) => {
+                        const d = new Date(v + "T00:00:00");
+                        return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+                      }}
+                      interval={4}
+                      fontSize={11}
+                      stroke="hsl(var(--muted-foreground))"
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      allowDecimals={false}
+                      fontSize={11}
+                      stroke="hsl(var(--muted-foreground))"
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          labelFormatter={(v: string) => {
+                            const d = new Date(v + "T00:00:00");
+                            return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+                          }}
+                        />
+                      }
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="count"
+                      stroke="var(--color-count)"
+                      fill="url(#fillBookings)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/60">
+              <CardHeader className="flex flex-row items-center gap-2 pb-2">
+                <PieIcon className="w-4 h-4 text-primary" />
+                <CardTitle className="text-sm font-semibold">Status breakdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {statusBreakdown.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-12 text-center">No bookings yet.</p>
+                ) : (
+                  <ChartContainer config={{}} className="h-[260px] w-full">
+                    <PieChart>
+                      <Pie
+                        data={statusBreakdown}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius={50}
+                        outerRadius={85}
+                        paddingAngle={2}
+                        strokeWidth={0}
+                      >
+                        {statusBreakdown.map((s) => (
+                          <Cell key={s.name} fill={s.color} />
+                        ))}
+                      </Pie>
+                      <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                    </PieChart>
+                  </ChartContainer>
+                )}
+                <div className="flex flex-wrap gap-2 justify-center mt-2">
+                  {statusBreakdown.map((s) => (
+                    <div key={s.name} className="flex items-center gap-1.5 text-xs">
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+                      <span className="capitalize text-muted-foreground">{s.name}</span>
+                      <span className="font-semibold tabular-nums">{s.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
