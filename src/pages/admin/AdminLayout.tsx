@@ -139,7 +139,8 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <aside className="w-64 border-r border-border bg-gradient-to-b from-card to-card/60 backdrop-blur flex flex-col animate-fade-in">
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-64 border-r border-border bg-gradient-to-b from-card to-card/60 backdrop-blur flex-col animate-fade-in">
         <div className="px-5 py-5 border-b border-border flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center font-heading font-bold text-primary-foreground shadow-lg shadow-primary/20">
             F9
@@ -211,7 +212,69 @@ export default function AdminLayout() {
           </Button>
         </div>
       </aside>
-      <main key={location.pathname} className="flex-1 overflow-auto animate-fade-in">
+
+      {/* Mobile top bar */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 px-4 flex items-center justify-between bg-card/95 backdrop-blur border-b border-border">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center font-heading font-bold text-primary-foreground text-xs shadow-md shadow-primary/20">
+            F9
+          </div>
+          <div className="font-heading text-sm font-bold tracking-tight">CRM Console</div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 hover:bg-destructive/10 hover:text-destructive"
+          onClick={handleLogout}
+          aria-label="Sign out"
+        >
+          <LogOut className="w-4 h-4" />
+        </Button>
+      </header>
+
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 h-16 bg-card/95 backdrop-blur border-t border-border flex">
+        {navItems.map((item) => {
+          const active = item.exact
+            ? location.pathname === item.to
+            : location.pathname.startsWith(item.to);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                "flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors",
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Icon className={cn("w-5 h-5", active && "scale-110 transition-transform")} />
+              {item.label}
+            </Link>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => {
+            const next = !muted;
+            setMuted(next);
+            toast(next ? "Notifications muted" : "Notifications unmuted", {
+              icon: next ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />,
+              duration: 2000,
+            });
+          }}
+          className={cn(
+            "flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors",
+            muted ? "text-muted-foreground" : "text-primary",
+          )}
+          aria-label={muted ? "Unmute notifications" : "Mute notifications"}
+        >
+          {muted ? <BellOff className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
+          {muted ? "Muted" : "Alerts"}
+        </button>
+      </nav>
+
+      <main key={location.pathname} className="flex-1 overflow-auto animate-fade-in pt-14 pb-16 md:pt-0 md:pb-0">
         <Outlet />
       </main>
     </div>
