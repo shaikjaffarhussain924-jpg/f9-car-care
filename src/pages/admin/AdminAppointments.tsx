@@ -14,8 +14,9 @@ import {
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MessageCircle, Save } from "lucide-react";
+import { Loader2, MessageCircle, Save, Phone, Mail, Calendar as CalIcon, Clock, Stethoscope, User } from "lucide-react";
 import { format } from "date-fns";
 import WhatsAppThread from "@/components/admin/WhatsAppThread";
 
@@ -215,39 +216,71 @@ export default function AdminAppointments() {
         <SheetContent className="w-full sm:max-w-2xl flex flex-col p-0">
           {drawerRow && (
             <>
-              <SheetHeader className="p-6 pb-3 border-b">
-                <SheetTitle>{drawerRow.name}</SheetTitle>
+              <SheetHeader className="p-6 pb-4 border-b">
+                <SheetTitle className="text-xl">{drawerRow.name}</SheetTitle>
                 <SheetDescription>
-                  {drawerRow.phone} · {drawerRow.service ?? "—"} · {drawerRow.preferred_date ?? "—"} {drawerRow.preferred_time ?? ""}
+                  Created {format(new Date(drawerRow.created_at), "dd MMM yyyy 'at' HH:mm")}
                 </SheetDescription>
               </SheetHeader>
 
-              <div className="px-6 py-3 border-b space-y-3">
-                {drawerRow.message && (
-                  <div className="text-sm">
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Customer message</div>
-                    <div className="bg-secondary/40 rounded p-2">{drawerRow.message}</div>
-                  </div>
-                )}
-                <NotesEditor
-                  initial={drawerRow.staff_notes ?? ""}
-                  saving={savingId === drawerRow.id}
-                  onSave={(notes) => saveNotes(drawerRow.id, notes)}
-                />
-              </div>
+              <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
+                <div className="px-6 pt-3 border-b">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="details">Details</TabsTrigger>
+                    <TabsTrigger value="whatsapp">
+                      <MessageCircle className="w-4 h-4 mr-1.5" /> WhatsApp
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-              <div className="flex-1 min-h-0">
-                <WhatsAppThread
-                  phone={drawerRow.phone}
-                  leadId={drawerRow.id}
-                  leadType="appointment"
-                  contactName={drawerRow.name}
-                />
-              </div>
+                <TabsContent value="details" className="flex-1 overflow-y-auto p-6 space-y-5 mt-0">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field icon={<Phone className="w-3.5 h-3.5" />} label="Phone" value={drawerRow.phone} />
+                    <Field icon={<Mail className="w-3.5 h-3.5" />} label="Email" value={drawerRow.email ?? "—"} />
+                    <Field icon={<Stethoscope className="w-3.5 h-3.5" />} label="Service" value={drawerRow.service ?? "—"} />
+                    <Field icon={<User className="w-3.5 h-3.5" />} label="Doctor" value={drawerRow.doctor ?? "—"} />
+                    <Field icon={<CalIcon className="w-3.5 h-3.5" />} label="Date" value={drawerRow.preferred_date ?? "—"} />
+                    <Field icon={<Clock className="w-3.5 h-3.5" />} label="Time" value={drawerRow.preferred_time ?? "—"} />
+                  </div>
+
+                  {drawerRow.message && (
+                    <div className="text-sm">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1.5">Customer message</div>
+                      <div className="bg-secondary/40 rounded-md p-3 whitespace-pre-wrap">{drawerRow.message}</div>
+                    </div>
+                  )}
+
+                  <NotesEditor
+                    initial={drawerRow.staff_notes ?? ""}
+                    saving={savingId === drawerRow.id}
+                    onSave={(notes) => saveNotes(drawerRow.id, notes)}
+                  />
+                </TabsContent>
+
+                <TabsContent value="whatsapp" className="flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+                  <WhatsAppThread
+                    phone={drawerRow.phone}
+                    leadId={drawerRow.id}
+                    leadType="appointment"
+                    contactName={drawerRow.name}
+                  />
+                </TabsContent>
+              </Tabs>
             </>
           )}
         </SheetContent>
       </Sheet>
+    </div>
+  );
+}
+
+function Field({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1.5 mb-1">
+        {icon} {label}
+      </div>
+      <div className="text-sm font-medium">{value}</div>
     </div>
   );
 }
