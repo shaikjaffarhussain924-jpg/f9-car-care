@@ -36,26 +36,25 @@ export default function AdminDashboard() {
   const [recent, setRecent] = useState<any[]>([]);
   const [bookingsOverTime, setBookingsOverTime] = useState<{ date: string; count: number }[]>([]);
   const [statusBreakdown, setStatusBreakdown] = useState<{ name: string; value: number; color: string }[]>([]);
-  const [stats, setStats] = useState({
-    pendingAppointments: 0,
-    newContacts: 0,
-    todayBookings: 0,
-    totalAppointments: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [recent, setRecent] = useState<any[]>([]);
-
   const loadData = async () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayIso = today.toISOString();
 
-    const [pending, contacts, todayCount, total, recentRows] = await Promise.all([
+    // 30-day window for chart
+    const since = new Date();
+    since.setDate(since.getDate() - 29);
+    since.setHours(0, 0, 0, 0);
+    const sinceIso = since.toISOString();
+
+    const [pending, contacts, todayCount, total, recentRows, chartRows, statusRows] = await Promise.all([
       supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("contact_submissions").select("id", { count: "exact", head: true }).eq("status", "new"),
       supabase.from("appointments").select("id", { count: "exact", head: true }).gte("created_at", todayIso),
       supabase.from("appointments").select("id", { count: "exact", head: true }),
       supabase.from("appointments").select("id, name, phone, service, status, created_at").order("created_at", { ascending: false }).limit(5),
+      supabase.from("appointments").select("created_at").gte("created_at", sinceIso),
+      supabase.from("appointments").select("status"),
     ]);
 
     setStats({
@@ -65,6 +64,39 @@ export default function AdminDashboard() {
       totalAppointments: total.count ?? 0,
     });
     setRecent(recentRows.data ?? []);
+
+    // Build 30-day series (fill empty days)
+    const counts: Record<string, number> = {};
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(since);
+      d.setDate(since.getDate() + i);
+      counts[d.toISOString().slice(0, 10)] = 0;
+    }
+    (chartRows.data ?? []).forEach((r: any) => {
+      const k = r.created_at.slice(0, 10);
+      if (k in counts) counts[k]++;
+    });
+    setBookingsOverTime(
+      Object.entries(counts).map(([date, count]) => ({ date, count })),
+    );
+
+    // Status breakdown for pie
+    const palette: Record<string, string> = {
+      pending: "hsl(38 92% 50%)",
+      confirmed: "hsl(199 89% 48%)",
+      completed: "hsl(160 84% 39%)",
+      cancelled: "hsl(0 84% 60%)",
+    };
+    const tally: Record<string, number> = { pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
+    (statusRows.data ?? []).forEach((r: any) => {
+      if (r.status in tally) tally[r.status]++;
+    });
+    setStatusBreakdown(
+      Object.entries(tally)
+        .filter(([, v]) => v > 0)
+        .map(([name, value]) => ({ name, value, color: palette[name] })),
+    );
+
     setLoading(false);
   };
 
