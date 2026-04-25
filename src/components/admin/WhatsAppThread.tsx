@@ -309,5 +309,6 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
         </div>
       </div>
     </div>
+    </>
   );
 }
