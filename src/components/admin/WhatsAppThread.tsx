@@ -126,16 +126,20 @@ export default function WhatsAppThread({ phone, leadId, leadType }: Props) {
             No messages yet. Say hello 👋
           </div>
         ) : (
-          messages.map((m) => (
+          messages.map((m, i) => (
             <div
               key={m.id}
-              className={cn("flex", m.direction === "out" ? "justify-end" : "justify-start")}
+              style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
+              className={cn(
+                "flex animate-scale-in",
+                m.direction === "out" ? "justify-end" : "justify-start",
+              )}
             >
               <div
                 className={cn(
-                  "max-w-[75%] rounded-2xl px-3 py-2 text-sm shadow-sm",
+                  "max-w-[75%] rounded-2xl px-3.5 py-2 text-sm shadow-sm transition-transform hover:scale-[1.01]",
                   m.direction === "out"
-                    ? "bg-primary text-primary-foreground rounded-br-sm"
+                    ? "bg-gradient-to-br from-primary to-primary/85 text-primary-foreground rounded-br-sm shadow-primary/20"
                     : "bg-card border border-border rounded-bl-sm",
                 )}
               >

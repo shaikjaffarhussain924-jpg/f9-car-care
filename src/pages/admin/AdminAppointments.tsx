@@ -100,14 +100,19 @@ export default function AdminAppointments() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-heading text-3xl font-bold">Appointments</h1>
+      <div className="flex items-center justify-between mb-6 animate-fade-in">
+        <div>
+          <h1 className="font-heading text-3xl font-bold tracking-tight">Appointments</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {filtered.length} {filtered.length === 1 ? "booking" : "bookings"}
+          </p>
+        </div>
         <div className="flex gap-2">
           <Input
             placeholder="Search name / phone / email"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-64"
+            className="w-64 transition-all focus:w-72"
           />
           <Select value={filter} onValueChange={(v) => setFilter(v as Status | "all")}>
             <SelectTrigger className="w-40">
@@ -150,8 +155,13 @@ export default function AdminAppointments() {
                   </TableCell>
                 </TableRow>
               )}
-              {filtered.map((r) => (
-                <TableRow key={r.id} className="cursor-pointer" onClick={() => setDrawerRow(r)}>
+              {filtered.map((r, i) => (
+                <TableRow
+                  key={r.id}
+                  style={{ animationDelay: `${Math.min(i, 10) * 30}ms` }}
+                  className="cursor-pointer animate-fade-in hover:bg-secondary/40 transition-colors"
+                  onClick={() => setDrawerRow(r)}
+                >
                   <TableCell className="text-xs text-muted-foreground">
                     {format(new Date(r.created_at), "dd MMM HH:mm")}
                   </TableCell>
