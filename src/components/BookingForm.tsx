@@ -118,10 +118,10 @@ const BookingForm = () => {
 
   const isStepValid = () => {
     if (currentStep === 0) {
-      const phoneClean = form.phone.replace(/\D/g, "");
+      const phoneDigits = form.phone.replace(/^\+91/, "").replace(/\D/g, "");
       return (
         form.name.trim().length >= 2 &&
-        phoneClean.length >= 10 &&
+        phoneDigits.length === 10 &&
         form.brand !== "" &&
         form.model.trim() !== "" &&
         form.service !== "" &&
@@ -279,14 +279,23 @@ const BookingForm = () => {
                       </motion.div>
                       <motion.div variants={fadeInUp} className="space-y-2">
                         <Label htmlFor="phone">Phone Number</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          placeholder="10-digit mobile number"
-                          maxLength={15}
-                          value={form.phone}
-                          onChange={(e) => updateField("phone", e.target.value)}
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium select-none">
+                            +91
+                          </span>
+                          <Input
+                            id="phone"
+                            type="tel"
+                            placeholder="10-digit mobile number"
+                            maxLength={10}
+                            className="pl-12"
+                            value={form.phone.replace(/^\+91/, "")}
+                            onChange={(e) => {
+                              const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                              updateField("phone", digits ? `+91${digits}` : "");
+                            }}
+                          />
+                        </div>
                       </motion.div>
                     </div>
 

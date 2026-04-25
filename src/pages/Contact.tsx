@@ -82,7 +82,22 @@ export default function Contact() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone</Label>
-                      <Input id="phone" type="tel" maxLength={15} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium select-none">
+                          +91
+                        </span>
+                        <Input 
+                          id="phone" 
+                          type="tel" 
+                          maxLength={10}
+                          className="pl-12"
+                          value={form.phone.replace(/^\+91/, "")} 
+                          onChange={(e) => {
+                            const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            setForm({ ...form, phone: digits ? `+91${digits}` : "" });
+                          }} 
+                        />
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-2">
