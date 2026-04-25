@@ -137,7 +137,14 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
   const displayName = contactName || `+${phone.replace(/\D/g, "")}`;
 
   return (
-    <div className="flex flex-col h-full bg-[#efeae2] dark:bg-[#0b141a]">
+    <>
+      {fullscreen && <div className="fixed inset-0 bg-black/60 z-50 animate-fade-in" onClick={() => setFullscreen(false)} />}
+      <div className={cn(
+        "flex flex-col bg-[#efeae2] dark:bg-[#0b141a]",
+        fullscreen
+          ? "fixed inset-0 sm:inset-4 md:inset-8 z-50 rounded-none sm:rounded-xl overflow-hidden shadow-2xl animate-scale-in"
+          : "h-full"
+      )}>
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-2.5 bg-[#008069] dark:bg-[#202c33] text-white shadow-sm shrink-0">
         <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-semibold text-base ring-2 ring-white/30">
