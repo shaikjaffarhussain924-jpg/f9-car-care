@@ -14,16 +14,174 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          created_at: string
+          doctor: string | null
+          email: string | null
+          id: string
+          message: string | null
+          name: string
+          phone: string
+          preferred_date: string | null
+          preferred_time: string | null
+          service: string | null
+          source: string | null
+          staff_notes: string | null
+          status: Database["public"]["Enums"]["appointment_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          doctor?: string | null
+          email?: string | null
+          id?: string
+          message?: string | null
+          name: string
+          phone: string
+          preferred_date?: string | null
+          preferred_time?: string | null
+          service?: string | null
+          source?: string | null
+          staff_notes?: string | null
+          status?: Database["public"]["Enums"]["appointment_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          doctor?: string | null
+          email?: string | null
+          id?: string
+          message?: string | null
+          name?: string
+          phone?: string
+          preferred_date?: string | null
+          preferred_time?: string | null
+          service?: string | null
+          source?: string | null
+          staff_notes?: string | null
+          status?: Database["public"]["Enums"]["appointment_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contact_submissions: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          message: string
+          name: string
+          phone: string | null
+          staff_notes: string | null
+          status: Database["public"]["Enums"]["contact_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+          staff_notes?: string | null
+          status?: Database["public"]["Enums"]["contact_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          staff_notes?: string | null
+          status?: Database["public"]["Enums"]["contact_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_messages: {
+        Row: {
+          body: string | null
+          created_at: string
+          direction: Database["public"]["Enums"]["wa_direction"]
+          error_message: string | null
+          id: string
+          lead_id: string | null
+          lead_type: Database["public"]["Enums"]["lead_type"] | null
+          phone: string
+          status: Database["public"]["Enums"]["wa_status"] | null
+          wa_message_id: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          direction: Database["public"]["Enums"]["wa_direction"]
+          error_message?: string | null
+          id?: string
+          lead_id?: string | null
+          lead_type?: Database["public"]["Enums"]["lead_type"] | null
+          phone: string
+          status?: Database["public"]["Enums"]["wa_status"] | null
+          wa_message_id?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          direction?: Database["public"]["Enums"]["wa_direction"]
+          error_message?: string | null
+          id?: string
+          lead_id?: string | null
+          lead_type?: Database["public"]["Enums"]["lead_type"] | null
+          phone?: string
+          status?: Database["public"]["Enums"]["wa_status"] | null
+          wa_message_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin_or_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "staff" | "user"
+      appointment_status: "pending" | "confirmed" | "completed" | "cancelled"
+      contact_status: "new" | "in_progress" | "resolved"
+      lead_type: "appointment" | "contact"
+      wa_direction: "in" | "out"
+      wa_status: "sent" | "delivered" | "read" | "failed" | "received"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +308,13 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "staff", "user"],
+      appointment_status: ["pending", "confirmed", "completed", "cancelled"],
+      contact_status: ["new", "in_progress", "resolved"],
+      lead_type: ["appointment", "contact"],
+      wa_direction: ["in", "out"],
+      wa_status: ["sent", "delivered", "read", "failed", "received"],
+    },
   },
 } as const
