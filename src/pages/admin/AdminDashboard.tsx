@@ -2,14 +2,28 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Calendar, MessageSquare, Clock, TrendingUp, Sparkles } from "lucide-react";
+import { Loader2, Calendar, MessageSquare, Clock, TrendingUp, Sparkles, PieChart as PieIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCountUp } from "@/hooks/useCountUp";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  PieChart, Pie, Cell,
+} from "recharts";
 
 function StatNumber({ value }: { value: number }) {
   const display = useCountUp(value);
   return <>{display}</>;
 }
+
+const bookingsChartConfig: ChartConfig = {
+  count: { label: "Bookings", color: "hsl(var(--primary))" },
+};
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -20,18 +34,27 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [recent, setRecent] = useState<any[]>([]);
-
+  const [bookingsOverTime, setBookingsOverTime] = useState<{ date: string; count: number }[]>([]);
+  const [statusBreakdown, setStatusBreakdown] = useState<{ name: string; value: number; color: string }[]>([]);
   const loadData = async () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayIso = today.toISOString();
 
-    const [pending, contacts, todayCount, total, recentRows] = await Promise.all([
+    // 30-day window for chart
+    const since = new Date();
+    since.setDate(since.getDate() - 29);
+    since.setHours(0, 0, 0, 0);
+    const sinceIso = since.toISOString();
+
+    const [pending, contacts, todayCount, total, recentRows, chartRows, statusRows] = await Promise.all([
       supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("contact_submissions").select("id", { count: "exact", head: true }).eq("status", "new"),
       supabase.from("appointments").select("id", { count: "exact", head: true }).gte("created_at", todayIso),
       supabase.from("appointments").select("id", { count: "exact", head: true }),
       supabase.from("appointments").select("id, name, phone, service, status, created_at").order("created_at", { ascending: false }).limit(5),
+      supabase.from("appointments").select("created_at").gte("created_at", sinceIso),
+      supabase.from("appointments").select("status"),
     ]);
 
     setStats({
@@ -41,6 +64,39 @@ export default function AdminDashboard() {
       totalAppointments: total.count ?? 0,
     });
     setRecent(recentRows.data ?? []);
+
+    // Build 30-day series (fill empty days)
+    const counts: Record<string, number> = {};
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(since);
+      d.setDate(since.getDate() + i);
+      counts[d.toISOString().slice(0, 10)] = 0;
+    }
+    (chartRows.data ?? []).forEach((r: any) => {
+      const k = r.created_at.slice(0, 10);
+      if (k in counts) counts[k]++;
+    });
+    setBookingsOverTime(
+      Object.entries(counts).map(([date, count]) => ({ date, count })),
+    );
+
+    // Status breakdown for pie
+    const palette: Record<string, string> = {
+      pending: "hsl(38 92% 50%)",
+      confirmed: "hsl(199 89% 48%)",
+      completed: "hsl(160 84% 39%)",
+      cancelled: "hsl(0 84% 60%)",
+    };
+    const tally: Record<string, number> = { pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
+    (statusRows.data ?? []).forEach((r: any) => {
+      if (r.status in tally) tally[r.status]++;
+    });
+    setStatusBreakdown(
+      Object.entries(tally)
+        .filter(([, v]) => v > 0)
+        .map(([name, value]) => ({ name, value, color: palette[name] })),
+    );
+
     setLoading(false);
   };
 
@@ -160,6 +216,110 @@ export default function AdminDashboard() {
               );
             })}
           </div>
+
+          {/* Charts row */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.4 }}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-10"
+          >
+            <Card className="lg:col-span-2 border-border/60">
+              <CardHeader className="flex flex-row items-center gap-2 pb-2">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <CardTitle className="text-sm font-semibold">Bookings — last 30 days</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={bookingsChartConfig} className="h-[260px] w-full">
+                  <AreaChart data={bookingsOverTime} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="fillBookings" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.5} />
+                        <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(v: string) => {
+                        const d = new Date(v + "T00:00:00");
+                        return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+                      }}
+                      interval={4}
+                      fontSize={11}
+                      stroke="hsl(var(--muted-foreground))"
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      allowDecimals={false}
+                      fontSize={11}
+                      stroke="hsl(var(--muted-foreground))"
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          labelFormatter={(v: string) => {
+                            const d = new Date(v + "T00:00:00");
+                            return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+                          }}
+                        />
+                      }
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="count"
+                      stroke="var(--color-count)"
+                      fill="url(#fillBookings)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/60">
+              <CardHeader className="flex flex-row items-center gap-2 pb-2">
+                <PieIcon className="w-4 h-4 text-primary" />
+                <CardTitle className="text-sm font-semibold">Status breakdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {statusBreakdown.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-12 text-center">No bookings yet.</p>
+                ) : (
+                  <ChartContainer config={{}} className="h-[260px] w-full">
+                    <PieChart>
+                      <Pie
+                        data={statusBreakdown}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius={50}
+                        outerRadius={85}
+                        paddingAngle={2}
+                        strokeWidth={0}
+                      >
+                        {statusBreakdown.map((s) => (
+                          <Cell key={s.name} fill={s.color} />
+                        ))}
+                      </Pie>
+                      <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                    </PieChart>
+                  </ChartContainer>
+                )}
+                <div className="flex flex-wrap gap-2 justify-center mt-2">
+                  {statusBreakdown.map((s) => (
+                    <div key={s.name} className="flex items-center gap-1.5 text-xs">
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+                      <span className="capitalize text-muted-foreground">{s.name}</span>
+                      <span className="font-semibold tabular-nums">{s.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 12 }}
