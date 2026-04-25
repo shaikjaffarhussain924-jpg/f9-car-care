@@ -166,6 +166,22 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
         <button className="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Call">
           <Phone className="w-5 h-5" />
         </button>
+        <button
+          onClick={() => setFullscreen((v) => !v)}
+          className="p-2 rounded-full hover:bg-white/10 transition-colors"
+          aria-label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+        >
+          {fullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+        </button>
+        {fullscreen && (
+          <button
+            onClick={() => setFullscreen(false)}
+            className="p-2 rounded-full hover:bg-white/10 transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
         <button className="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="More">
           <MoreVertical className="w-5 h-5" />
         </button>
