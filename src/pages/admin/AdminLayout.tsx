@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Outlet, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, LayoutDashboard, Calendar, MessageSquare, LogOut } from "lucide-react";
+import { Loader2, LayoutDashboard, Calendar, MessageSquare, LogOut, BellRing } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
