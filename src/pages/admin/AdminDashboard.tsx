@@ -2,16 +2,40 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Calendar, MessageSquare, Clock, TrendingUp, Sparkles } from "lucide-react";
+import { Loader2, Calendar, MessageSquare, Clock, TrendingUp, Sparkles, PieChart as PieIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCountUp } from "@/hooks/useCountUp";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  PieChart, Pie, Cell,
+} from "recharts";
 
 function StatNumber({ value }: { value: number }) {
   const display = useCountUp(value);
   return <>{display}</>;
 }
 
+const bookingsChartConfig: ChartConfig = {
+  count: { label: "Bookings", color: "hsl(var(--primary))" },
+};
+
 export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    pendingAppointments: 0,
+    newContacts: 0,
+    todayBookings: 0,
+    totalAppointments: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [recent, setRecent] = useState<any[]>([]);
+  const [bookingsOverTime, setBookingsOverTime] = useState<{ date: string; count: number }[]>([]);
+  const [statusBreakdown, setStatusBreakdown] = useState<{ name: string; value: number; color: string }[]>([]);
   const [stats, setStats] = useState({
     pendingAppointments: 0,
     newContacts: 0,
