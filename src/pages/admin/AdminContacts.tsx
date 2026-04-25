@@ -14,8 +14,9 @@ import {
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MessageCircle, Save } from "lucide-react";
+import { Loader2, MessageCircle, Save, Phone, Mail } from "lucide-react";
 import { format } from "date-fns";
 import WhatsAppThread from "@/components/admin/WhatsAppThread";
 
