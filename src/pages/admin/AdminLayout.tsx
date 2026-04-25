@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Outlet, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, LayoutDashboard, Calendar, MessageSquare, LogOut, BellRing } from "lucide-react";
+import { Loader2, LayoutDashboard, Calendar, MessageSquare, LogOut, BellRing, Bell, BellOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -55,12 +55,21 @@ export default function AdminLayout() {
     };
   }, [navigate]);
 
+  // Sound mute toggle (persisted)
+  const [muted, setMuted] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("admin-sound-muted") === "1";
+  });
+  useEffect(() => {
+    localStorage.setItem("admin-sound-muted", muted ? "1" : "0");
+  }, [muted]);
+
   // Global realtime listener — toast + chime when new bookings / contacts arrive
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   useEffect(() => {
     if (!authorized) return;
 
     const playChime = () => {
+      if (localStorage.getItem("admin-sound-muted") === "1") return;
       try {
         const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
         const o = ctx.createOscillator();
