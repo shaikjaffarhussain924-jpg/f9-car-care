@@ -76,13 +76,18 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <aside className="w-60 border-r border-border bg-card flex flex-col">
-        <div className="px-5 py-5 border-b border-border">
-          <div className="font-heading text-lg font-bold tracking-tight">F9 CRM</div>
-          <div className="text-xs text-muted-foreground truncate">{email}</div>
+      <aside className="w-64 border-r border-border bg-gradient-to-b from-card to-card/60 backdrop-blur flex flex-col animate-fade-in">
+        <div className="px-5 py-5 border-b border-border flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center font-heading font-bold text-primary-foreground shadow-lg shadow-primary/20">
+            F9
+          </div>
+          <div className="min-w-0">
+            <div className="font-heading text-sm font-bold tracking-tight">CRM Console</div>
+            <div className="text-[11px] text-muted-foreground truncate">{email}</div>
+          </div>
         </div>
-        <nav className="flex-1 px-2 py-3 space-y-1">
-          {navItems.map((item) => {
+        <nav className="flex-1 px-2 py-4 space-y-1">
+          {navItems.map((item, i) => {
             const active = item.exact
               ? location.pathname === item.to
               : location.pathname.startsWith(item.to);
@@ -91,14 +96,21 @@ export default function AdminLayout() {
               <Link
                 key={item.to}
                 to={item.to}
+                style={{ animationDelay: `${i * 50}ms` }}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+                  "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 animate-slide-in-right",
                   active
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground hover:translate-x-0.5",
                 )}
               >
-                <Icon className="w-4 h-4" />
+                {active && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-primary-foreground/80" />
+                )}
+                <Icon className={cn(
+                  "w-4 h-4 transition-transform",
+                  !active && "group-hover:scale-110",
+                )} />
                 {item.label}
               </Link>
             );
@@ -108,14 +120,14 @@ export default function AdminLayout() {
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start gap-2"
+            className="w-full justify-start gap-2 hover:bg-destructive/10 hover:text-destructive transition-colors"
             onClick={handleLogout}
           >
             <LogOut className="w-4 h-4" /> Sign out
           </Button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto">
+      <main key={location.pathname} className="flex-1 overflow-auto animate-fade-in">
         <Outlet />
       </main>
     </div>
