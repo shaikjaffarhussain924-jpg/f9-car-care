@@ -148,8 +148,13 @@ export default function AdminContacts() {
                   </TableCell>
                 </TableRow>
               )}
-              {filtered.map((r) => (
-                <TableRow key={r.id} className="cursor-pointer" onClick={() => setDrawerRow(r)}>
+              {filtered.map((r, i) => (
+                <TableRow
+                  key={r.id}
+                  style={{ animationDelay: `${Math.min(i, 10) * 30}ms` }}
+                  className="cursor-pointer animate-fade-in hover:bg-secondary/40 transition-colors"
+                  onClick={() => setDrawerRow(r)}
+                >
                   <TableCell className="text-xs text-muted-foreground">
                     {format(new Date(r.created_at), "dd MMM HH:mm")}
                   </TableCell>
