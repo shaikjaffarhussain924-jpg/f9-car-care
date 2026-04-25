@@ -118,10 +118,10 @@ const BookingForm = () => {
 
   const isStepValid = () => {
     if (currentStep === 0) {
-      const phoneClean = form.phone.replace(/\D/g, "");
+      const phoneDigits = form.phone.replace(/^\+91/, "").replace(/\D/g, "");
       return (
         form.name.trim().length >= 2 &&
-        phoneClean.length >= 10 &&
+        phoneDigits.length === 10 &&
         form.brand !== "" &&
         form.model.trim() !== "" &&
         form.service !== "" &&
