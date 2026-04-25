@@ -15,29 +15,37 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [recent, setRecent] = useState<any[]>([]);
 
+  const loadData = async () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayIso = today.toISOString();
+
+    const [pending, contacts, todayCount, total, recentRows] = await Promise.all([
+      supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("contact_submissions").select("id", { count: "exact", head: true }).eq("status", "new"),
+      supabase.from("appointments").select("id", { count: "exact", head: true }).gte("created_at", todayIso),
+      supabase.from("appointments").select("id", { count: "exact", head: true }),
+      supabase.from("appointments").select("id, name, phone, service, status, created_at").order("created_at", { ascending: false }).limit(5),
+    ]);
+
+    setStats({
+      pendingAppointments: pending.count ?? 0,
+      newContacts: contacts.count ?? 0,
+      todayBookings: todayCount.count ?? 0,
+      totalAppointments: total.count ?? 0,
+    });
+    setRecent(recentRows.data ?? []);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    (async () => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayIso = today.toISOString();
-
-      const [pending, contacts, todayCount, total, recentRows] = await Promise.all([
-        supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        supabase.from("contact_submissions").select("id", { count: "exact", head: true }).eq("status", "new"),
-        supabase.from("appointments").select("id", { count: "exact", head: true }).gte("created_at", todayIso),
-        supabase.from("appointments").select("id", { count: "exact", head: true }),
-        supabase.from("appointments").select("id, name, phone, service, status, created_at").order("created_at", { ascending: false }).limit(5),
-      ]);
-
-      setStats({
-        pendingAppointments: pending.count ?? 0,
-        newContacts: contacts.count ?? 0,
-        todayBookings: todayCount.count ?? 0,
-        totalAppointments: total.count ?? 0,
-      });
-      setRecent(recentRows.data ?? []);
-      setLoading(false);
-    })();
+    loadData();
+    const channel = supabase
+      .channel("dashboard-feed")
+      .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, () => loadData())
+      .on("postgres_changes", { event: "*", schema: "public", table: "contact_submissions" }, () => loadData())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const cards = [

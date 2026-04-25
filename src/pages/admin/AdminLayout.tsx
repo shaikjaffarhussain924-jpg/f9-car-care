@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Outlet, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, LayoutDashboard, Calendar, MessageSquare, LogOut } from "lucide-react";
+import { Loader2, LayoutDashboard, Calendar, MessageSquare, LogOut, BellRing } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
@@ -53,6 +54,62 @@ export default function AdminLayout() {
       subscription.unsubscribe();
     };
   }, [navigate]);
+
+  // Global realtime listener — toast + chime when new bookings / contacts arrive
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    if (!authorized) return;
+
+    const playChime = () => {
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = "sine"; o.frequency.value = 880;
+        g.gain.setValueAtTime(0.0001, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+        o.start(); o.stop(ctx.currentTime + 0.45);
+      } catch { /* ignore */ }
+    };
+
+    const channel = supabase
+      .channel("admin-global-feed")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "appointments" },
+        (payload: any) => {
+          const row = payload.new;
+          playChime();
+          toast.success("New booking received!", {
+            description: `${row.name} · ${row.service ?? "service"}${row.preferred_date ? ` · ${row.preferred_date}` : ""}`,
+            icon: <BellRing className="w-4 h-4" />,
+            action: { label: "View", onClick: () => navigate("/admin/appointments") },
+            duration: 8000,
+          });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "contact_submissions" },
+        (payload: any) => {
+          const row = payload.new;
+          playChime();
+          toast("New contact message", {
+            description: `${row.name} — ${(row.message ?? "").slice(0, 60)}…`,
+            icon: <MessageSquare className="w-4 h-4" />,
+            action: { label: "Open", onClick: () => navigate("/admin/contacts") },
+            duration: 8000,
+          });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [authorized, navigate]);
 
   if (checking) {
     return (

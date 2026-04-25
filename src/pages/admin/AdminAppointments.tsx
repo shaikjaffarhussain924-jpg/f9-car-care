@@ -65,6 +65,15 @@ export default function AdminAppointments() {
 
   useEffect(() => { load(); }, [filter]);
 
+  useEffect(() => {
+    const channel = supabase
+      .channel("appointments-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
+
   const filtered = rows.filter((r) => {
     if (!search) return true;
     const s = search.toLowerCase();
@@ -232,6 +241,7 @@ export default function AdminAppointments() {
                   phone={drawerRow.phone}
                   leadId={drawerRow.id}
                   leadType="appointment"
+                  contactName={drawerRow.name}
                 />
               </div>
             </>
