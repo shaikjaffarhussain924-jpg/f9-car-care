@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Send, Check, CheckCheck, AlertCircle, Phone, MoreVertical, Smile, Paperclip } from "lucide-react";
+import { Loader2, Send, Check, CheckCheck, AlertCircle, Phone, MoreVertical, Smile, Paperclip, Maximize2, Minimize2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday, isYesterday } from "date-fns";
@@ -60,6 +60,7 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -136,7 +137,14 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
   const displayName = contactName || `+${phone.replace(/\D/g, "")}`;
 
   return (
-    <div className="flex flex-col h-full bg-[#efeae2] dark:bg-[#0b141a]">
+    <>
+      {fullscreen && <div className="fixed inset-0 bg-black/60 z-50 animate-fade-in" onClick={() => setFullscreen(false)} />}
+      <div className={cn(
+        "flex flex-col bg-[#efeae2] dark:bg-[#0b141a]",
+        fullscreen
+          ? "fixed inset-0 sm:inset-4 md:inset-8 z-50 rounded-none sm:rounded-xl overflow-hidden shadow-2xl animate-scale-in"
+          : "h-full"
+      )}>
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-2.5 bg-[#008069] dark:bg-[#202c33] text-white shadow-sm shrink-0">
         <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-semibold text-base ring-2 ring-white/30">
@@ -158,6 +166,22 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
         <button className="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Call">
           <Phone className="w-5 h-5" />
         </button>
+        <button
+          onClick={() => setFullscreen((v) => !v)}
+          className="p-2 rounded-full hover:bg-white/10 transition-colors"
+          aria-label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+        >
+          {fullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+        </button>
+        {fullscreen && (
+          <button
+            onClick={() => setFullscreen(false)}
+            className="p-2 rounded-full hover:bg-white/10 transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
         <button className="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="More">
           <MoreVertical className="w-5 h-5" />
         </button>
@@ -285,5 +309,6 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
         </div>
       </div>
     </div>
+    </>
   );
 }
