@@ -3,21 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
-} from "@/components/ui/sheet";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MessageCircle, Save, Phone, Mail } from "lucide-react";
+import { Loader2, Save, Search, Phone, Mail, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import WhatsAppThread from "@/components/admin/WhatsAppThread";
 
 type Status = "new" | "in_progress" | "resolved";
@@ -33,11 +23,18 @@ interface Contact {
   created_at: string;
 }
 
-const statusColor: Record<Status, string> = {
-  new: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
-  in_progress: "bg-sky-500/15 text-sky-700 dark:text-sky-400 border-sky-500/30",
-  resolved: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+const statusPillColor: Record<Status, string> = {
+  new: "bg-amber-100 text-amber-800",
+  in_progress: "bg-blue-100 text-blue-800",
+  resolved: "bg-emerald-100 text-emerald-800",
 };
+
+const FILTERS: Array<{ value: Status | "all"; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "new", label: "New" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "resolved", label: "Resolved" },
+];
 
 export default function AdminContacts() {
   const [rows, setRows] = useState<Contact[]>([]);
@@ -87,6 +84,7 @@ export default function AdminContacts() {
     else {
       setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
       if (drawerRow?.id === id) setDrawerRow({ ...drawerRow, status });
+      toast({ title: `Marked ${status.replace("_", " ")}` });
     }
     setSavingId(null);
   };
@@ -103,164 +101,167 @@ export default function AdminContacts() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6 animate-fade-in">
-        <div>
-          <h1 className="font-heading text-3xl font-bold tracking-tight">Contacts</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {filtered.length} {filtered.length === 1 ? "message" : "messages"}
-          </p>
-        </div>
-        <div className="flex gap-2">
+    <div className="p-6 md:p-8 max-w-6xl mx-auto">
+      <h1 className="font-heading text-3xl md:text-4xl font-bold tracking-tight mb-6 animate-fade-in">
+        Contact Submissions
+      </h1>
+
+      {/* Search + filter pills */}
+      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search name / phone / email"
+            placeholder="Search by name, phone or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-64 transition-all focus:w-72"
+            className="pl-9 h-11 rounded-full bg-card border-border"
           />
-          <Select value={filter} onValueChange={(v) => setFilter(v as Status | "all")}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="new">New</SelectItem>
-              <SelectItem value="in_progress">In progress</SelectItem>
-              <SelectItem value="resolved">Resolved</SelectItem>
-            </SelectContent>
-          </Select>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setFilter(f.value)}
+              className={cn(
+                "px-4 h-11 rounded-full text-sm font-medium transition-all border",
+                filter === f.value
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-card text-foreground border-border hover:bg-secondary/50"
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <Card>
-        {loading ? (
-          <div className="flex justify-center p-8">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Created</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead className="max-w-md">Message</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                    No contact messages found
-                  </TableCell>
-                </TableRow>
-              )}
-              {filtered.map((r, i) => (
-                <TableRow
-                  key={r.id}
-                  style={{ animationDelay: `${Math.min(i, 10) * 30}ms` }}
-                  className="cursor-pointer animate-fade-in hover:bg-secondary/40 transition-colors"
-                  onClick={() => setDrawerRow(r)}
-                >
-                  <TableCell className="text-xs text-muted-foreground">
-                    {format(new Date(r.created_at), "dd MMM HH:mm")}
-                  </TableCell>
-                  <TableCell className="font-medium">{r.name}</TableCell>
-                  <TableCell>{r.phone ?? "—"}</TableCell>
-                  <TableCell>{r.email ?? "—"}</TableCell>
-                  <TableCell className="max-w-md truncate">{r.message}</TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Select
-                      value={r.status}
-                      onValueChange={(v) => updateStatus(r.id, v as Status)}
-                      disabled={savingId === r.id}
-                    >
-                      <SelectTrigger className="h-8 w-36">
-                        <Badge variant="outline" className={statusColor[r.status]}>
-                          {r.status}
-                        </Badge>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="in_progress">In progress</SelectItem>
-                        <SelectItem value="resolved">Resolved</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={!r.phone}
-                      onClick={() => setDrawerRow(r)}
-                    >
-                      <MessageCircle className="w-4 h-4 mr-1" /> WhatsApp
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </Card>
+      {/* Cards list */}
+      {loading ? (
+        <div className="flex justify-center p-8">
+          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center text-muted-foreground py-16 bg-card rounded-2xl border border-border flex flex-col items-center gap-3">
+          <MessageCircle className="w-10 h-10 opacity-40" />
+          No contacts found
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((r, i) => (
+            <button
+              key={r.id}
+              onClick={() => setDrawerRow(r)}
+              style={{ animationDelay: `${Math.min(i, 10) * 30}ms` }}
+              className="w-full text-left bg-card border border-border rounded-2xl px-5 py-4 hover:shadow-md hover:border-foreground/20 transition-all animate-fade-in"
+            >
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="font-heading font-semibold text-base">{r.name}</span>
+                  <span className={cn("px-2.5 py-0.5 rounded-full text-xs font-medium capitalize", statusPillColor[r.status])}>
+                    {r.status.replace("_", " ")}
+                  </span>
+                </div>
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  {format(new Date(r.created_at), "M/d/yyyy")}
+                </span>
+              </div>
+              <div className="text-sm text-foreground/80 mb-2 line-clamp-2">{r.message}</div>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                {r.phone && (
+                  <span className="flex items-center gap-1">
+                    <Phone className="w-3.5 h-3.5" /> {r.phone}
+                  </span>
+                )}
+                {r.email && (
+                  <span className="flex items-center gap-1">
+                    <Mail className="w-3.5 h-3.5" /> {r.email}
+                  </span>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
 
+      {/* Drawer */}
       <Sheet open={!!drawerRow} onOpenChange={(open) => !open && setDrawerRow(null)}>
-        <SheetContent className="w-full sm:max-w-2xl flex flex-col p-0">
+        <SheetContent className="w-full sm:max-w-[520px] flex flex-col p-0 gap-0">
           {drawerRow && (
             <>
-              <SheetHeader className="p-6 pb-4 border-b">
-                <SheetTitle className="text-xl">{drawerRow.name}</SheetTitle>
-                <SheetDescription>
-                  Created {format(new Date(drawerRow.created_at), "dd MMM yyyy 'at' HH:mm")}
-                </SheetDescription>
+              <SheetHeader className="p-6 pb-4 flex-row items-center justify-between space-y-0">
+                <SheetTitle className="text-xl font-heading">Contact Details</SheetTitle>
               </SheetHeader>
 
-              <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
-                <div className="px-6 pt-3 border-b">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="details">Details</TabsTrigger>
-                    <TabsTrigger value="whatsapp" disabled={!drawerRow.phone}>
-                      <MessageCircle className="w-4 h-4 mr-1.5" /> WhatsApp
-                    </TabsTrigger>
-                  </TabsList>
+              <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-5">
+                <div>
+                  <div className="text-xs text-muted-foreground mb-1">Name</div>
+                  <div className="text-lg font-semibold">{drawerRow.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {format(new Date(drawerRow.created_at), "dd MMM yyyy 'at' HH:mm")}
+                  </div>
                 </div>
 
-                <TabsContent value="details" className="flex-1 overflow-y-auto p-6 space-y-5 mt-0">
-                  <div className="grid grid-cols-2 gap-4">
-                    <ContactField icon={<Phone className="w-3.5 h-3.5" />} label="Phone" value={drawerRow.phone ?? "—"} />
-                    <ContactField icon={<Mail className="w-3.5 h-3.5" />} label="Email" value={drawerRow.email ?? "—"} />
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Phone" value={
+                    drawerRow.phone ? (
+                      <span className="flex items-center gap-1.5 text-primary">
+                        <Phone className="w-3.5 h-3.5" /> {drawerRow.phone}
+                      </span>
+                    ) : "—"
+                  } />
+                  <Field label="Email" value={drawerRow.email ?? "—"} />
+                </div>
+
+                <div>
+                  <div className="text-xs text-muted-foreground mb-2">Status</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {(["new", "in_progress", "resolved"] as Status[]).map((s) => (
+                      <button
+                        key={s}
+                        disabled={savingId === drawerRow.id}
+                        onClick={() => updateStatus(drawerRow.id, s)}
+                        className={cn(
+                          "px-4 h-9 rounded-full text-sm font-medium border transition-all capitalize",
+                          drawerRow.status === s
+                            ? "bg-foreground text-background border-foreground"
+                            : "bg-card text-foreground border-border hover:bg-secondary/50"
+                        )}
+                      >
+                        {s.replace("_", " ")}
+                      </button>
+                    ))}
                   </div>
+                </div>
 
-                  <div className="text-sm">
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1.5">Message</div>
-                    <div className="bg-secondary/40 rounded-md p-3 whitespace-pre-wrap">{drawerRow.message}</div>
-                  </div>
+                <div className="text-sm">
+                  <div className="text-xs text-muted-foreground mb-1.5">Message</div>
+                  <div className="bg-secondary/40 rounded-md p-3 whitespace-pre-wrap">{drawerRow.message}</div>
+                </div>
 
-                  <NotesEditor
-                    initial={drawerRow.staff_notes ?? ""}
-                    saving={savingId === drawerRow.id}
-                    onSave={(n) => saveNotes(drawerRow.id, n)}
-                  />
-                </TabsContent>
+                <NotesEditor
+                  initial={drawerRow.staff_notes ?? ""}
+                  saving={savingId === drawerRow.id}
+                  onSave={(notes) => saveNotes(drawerRow.id, notes)}
+                />
 
-                <TabsContent value="whatsapp" className="flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col">
-                  {drawerRow.phone ? (
-                    <WhatsAppThread
-                      phone={drawerRow.phone}
-                      leadId={drawerRow.id}
-                      leadType="contact"
-                      contactName={drawerRow.name}
-                    />
-                  ) : (
-                    <div className="p-8 text-center text-sm text-muted-foreground">
-                      No phone number on file — can't open WhatsApp thread.
+                {/* WhatsApp section */}
+                {drawerRow.phone && (
+                  <div className="pt-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                      <MessageCircle className="w-4 h-4" />
+                      WhatsApp Conversation
                     </div>
-                  )}
-                </TabsContent>
-              </Tabs>
+                    <div className="rounded-2xl overflow-hidden border border-border h-[420px] flex flex-col">
+                      <WhatsAppThread
+                        phone={drawerRow.phone}
+                        leadId={drawerRow.id}
+                        leadType="contact"
+                        contactName={drawerRow.name}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </>
           )}
         </SheetContent>
@@ -269,12 +270,10 @@ export default function AdminContacts() {
   );
 }
 
-function ContactField({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <div className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1.5 mb-1">
-        {icon} {label}
-      </div>
+      <div className="text-xs text-muted-foreground mb-1">{label}</div>
       <div className="text-sm font-medium break-all">{value}</div>
     </div>
   );
@@ -287,11 +286,22 @@ function NotesEditor({
   useEffect(() => setVal(initial), [initial]);
   return (
     <div className="space-y-2">
-      <div className="text-xs text-muted-foreground uppercase tracking-wide">Staff notes</div>
-      <Textarea value={val} onChange={(e) => setVal(e.target.value)} rows={2} />
-      <Button size="sm" variant="outline" onClick={() => onSave(val)} disabled={saving}>
+      <div className="text-xs text-muted-foreground">Staff Notes</div>
+      <Textarea
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        rows={3}
+        placeholder="Internal notes..."
+        className="resize-none"
+      />
+      <Button
+        size="sm"
+        onClick={() => onSave(val)}
+        disabled={saving}
+        className="bg-foreground text-background hover:bg-foreground/90"
+      >
         {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Save className="w-3 h-3 mr-1" />}
-        Save notes
+        Save Notes
       </Button>
     </div>
   );
