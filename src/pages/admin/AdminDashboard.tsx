@@ -1,71 +1,87 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Calendar, MessageSquare, Clock, TrendingUp, Sparkles, PieChart as PieIcon } from "lucide-react";
+import {
+  Loader2, Calendar, Users, Clock, CheckCircle2, XCircle, MessageSquare, TrendingUp,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCountUp } from "@/hooks/useCountUp";
+import { format } from "date-fns";
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
+  ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig,
 } from "@/components/ui/chart";
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  PieChart, Pie, Cell,
-} from "recharts";
-
-function StatNumber({ value }: { value: number }) {
-  const display = useCountUp(value);
-  return <>{display}</>;
-}
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const bookingsChartConfig: ChartConfig = {
-  count: { label: "Bookings", color: "hsl(var(--primary))" },
+  count: { label: "Bookings", color: "hsl(217 91% 60%)" },
 };
+
+interface Upcoming {
+  id: string;
+  name: string;
+  service: string | null;
+  preferred_date: string | null;
+  preferred_time: string | null;
+  status: string;
+}
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
-    pendingAppointments: 0,
-    newContacts: 0,
-    todayBookings: 0,
     totalAppointments: 0,
+    todayBookings: 0,
+    pending: 0,
+    completed: 0,
+    cancelled: 0,
+    newContacts: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [recent, setRecent] = useState<any[]>([]);
   const [bookingsOverTime, setBookingsOverTime] = useState<{ date: string; count: number }[]>([]);
-  const [statusBreakdown, setStatusBreakdown] = useState<{ name: string; value: number; color: string }[]>([]);
+  const [upcoming, setUpcoming] = useState<Upcoming[]>([]);
+
   const loadData = async () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayIso = today.toISOString();
 
-    // 30-day window for chart
     const since = new Date();
     since.setDate(since.getDate() - 29);
     since.setHours(0, 0, 0, 0);
     const sinceIso = since.toISOString();
 
-    const [pending, contacts, todayCount, total, recentRows, chartRows, statusRows] = await Promise.all([
-      supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "pending"),
-      supabase.from("contact_submissions").select("id", { count: "exact", head: true }).eq("status", "new"),
-      supabase.from("appointments").select("id", { count: "exact", head: true }).gte("created_at", todayIso),
-      supabase.from("appointments").select("id", { count: "exact", head: true }),
-      supabase.from("appointments").select("id, name, phone, service, status, created_at").order("created_at", { ascending: false }).limit(5),
-      supabase.from("appointments").select("created_at").gte("created_at", sinceIso),
-      supabase.from("appointments").select("status"),
-    ]);
+    const now = new Date();
+    const in24 = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const todayStr = format(now, "yyyy-MM-dd");
+    const next24Str = format(in24, "yyyy-MM-dd");
+
+    const [total, todayCount, pending, completed, cancelled, contacts, chartRows, upcomingRows] =
+      await Promise.all([
+        supabase.from("appointments").select("id", { count: "exact", head: true }),
+        supabase.from("appointments").select("id", { count: "exact", head: true }).gte("created_at", todayIso),
+        supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "completed"),
+        supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "cancelled"),
+        supabase.from("contact_submissions").select("id", { count: "exact", head: true }).eq("status", "new"),
+        supabase.from("appointments").select("created_at").gte("created_at", sinceIso),
+        supabase
+          .from("appointments")
+          .select("id, name, service, preferred_date, preferred_time, status")
+          .in("status", ["pending", "confirmed"])
+          .gte("preferred_date", todayStr)
+          .lte("preferred_date", next24Str)
+          .order("preferred_date", { ascending: true })
+          .order("preferred_time", { ascending: true })
+          .limit(8),
+      ]);
 
     setStats({
-      pendingAppointments: pending.count ?? 0,
-      newContacts: contacts.count ?? 0,
-      todayBookings: todayCount.count ?? 0,
       totalAppointments: total.count ?? 0,
+      todayBookings: todayCount.count ?? 0,
+      pending: pending.count ?? 0,
+      completed: completed.count ?? 0,
+      cancelled: cancelled.count ?? 0,
+      newContacts: contacts.count ?? 0,
     });
-    setRecent(recentRows.data ?? []);
+    setUpcoming((upcomingRows.data ?? []) as Upcoming[]);
 
-    // Build 30-day series (fill empty days)
     const counts: Record<string, number> = {};
     for (let i = 0; i < 30; i++) {
       const d = new Date(since);
@@ -76,26 +92,7 @@ export default function AdminDashboard() {
       const k = r.created_at.slice(0, 10);
       if (k in counts) counts[k]++;
     });
-    setBookingsOverTime(
-      Object.entries(counts).map(([date, count]) => ({ date, count })),
-    );
-
-    // Status breakdown for pie
-    const palette: Record<string, string> = {
-      pending: "hsl(38 92% 50%)",
-      confirmed: "hsl(199 89% 48%)",
-      completed: "hsl(160 84% 39%)",
-      cancelled: "hsl(0 84% 60%)",
-    };
-    const tally: Record<string, number> = { pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
-    (statusRows.data ?? []).forEach((r: any) => {
-      if (r.status in tally) tally[r.status]++;
-    });
-    setStatusBreakdown(
-      Object.entries(tally)
-        .filter(([, v]) => v > 0)
-        .map(([name, value]) => ({ name, value, color: palette[name] })),
-    );
+    setBookingsOverTime(Object.entries(counts).map(([date, count]) => ({ date, count })));
 
     setLoading(false);
   };
@@ -111,66 +108,26 @@ export default function AdminDashboard() {
   }, []);
 
   const cards = [
-    {
-      label: "Pending Appointments",
-      value: stats.pendingAppointments,
-      icon: Calendar,
-      tint: "from-amber-500/20 to-amber-500/5",
-      ring: "ring-amber-500/30",
-      iconColor: "text-amber-500",
-    },
-    {
-      label: "New Messages",
-      value: stats.newContacts,
-      icon: MessageSquare,
-      tint: "from-sky-500/20 to-sky-500/5",
-      ring: "ring-sky-500/30",
-      iconColor: "text-sky-500",
-    },
-    {
-      label: "Today's Bookings",
-      value: stats.todayBookings,
-      icon: Clock,
-      tint: "from-emerald-500/20 to-emerald-500/5",
-      ring: "ring-emerald-500/30",
-      iconColor: "text-emerald-500",
-    },
-    {
-      label: "Total Appointments",
-      value: stats.totalAppointments,
-      icon: TrendingUp,
-      tint: "from-primary/20 to-primary/5",
-      ring: "ring-primary/30",
-      iconColor: "text-primary",
-    },
+    { label: "Total Appointments", value: stats.totalAppointments, icon: Calendar, tile: "bg-amber-100 text-amber-700" },
+    { label: "Today's Bookings", value: stats.todayBookings, icon: Users, tile: "bg-emerald-100 text-emerald-700" },
+    { label: "Pending", value: stats.pending, icon: Clock, tile: "bg-orange-100 text-orange-700" },
+    { label: "Completed", value: stats.completed, icon: CheckCircle2, tile: "bg-green-100 text-green-700" },
+    { label: "Cancelled", value: stats.cancelled, icon: XCircle, tile: "bg-rose-100 text-rose-700" },
+    { label: "New Contacts", value: stats.newContacts, icon: MessageSquare, tile: "bg-violet-100 text-violet-700" },
   ];
 
-  const statusColor: Record<string, string> = {
-    pending: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-    confirmed: "bg-sky-500/15 text-sky-700 dark:text-sky-400",
-    completed: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-    cancelled: "bg-destructive/15 text-destructive",
+  const statusPill: Record<string, string> = {
+    pending: "bg-amber-100 text-amber-800",
+    confirmed: "bg-emerald-100 text-emerald-800",
+    completed: "bg-blue-100 text-blue-800",
+    cancelled: "bg-red-100 text-red-800",
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="mb-8 flex items-center gap-3"
-      >
-        <div className="relative">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <span className="absolute inset-0 rounded-xl ring-2 ring-primary/40 animate-pulse-ring pointer-events-none" />
-        </div>
-        <div>
-          <h1 className="font-heading text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Overview of bookings & messages</p>
-        </div>
-      </motion.div>
+    <div className="p-6 md:p-8 max-w-7xl mx-auto">
+      <h1 className="font-heading text-3xl md:text-4xl font-bold tracking-tight mb-6 animate-fade-in">
+        Dashboard
+      </h1>
 
       {loading ? (
         <div className="flex justify-center py-16">
@@ -178,63 +135,39 @@ export default function AdminDashboard() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          {/* Stat cards */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-6">
             {cards.map((c, i) => {
               const Icon = c.icon;
               return (
-                <motion.div
+                <div
                   key={c.label}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.07, duration: 0.4, ease: "easeOut" }}
-                  whileHover={{ y: -3, transition: { duration: 0.2 } }}
+                  style={{ animationDelay: `${i * 40}ms` }}
+                  className="bg-card border border-border rounded-2xl p-4 animate-fade-in hover:shadow-md transition-shadow"
                 >
-                  <Card className={cn(
-                    "relative overflow-hidden border-border/60 ring-1",
-                    c.ring,
-                  )}>
-                    <div className={cn("absolute inset-0 bg-gradient-to-br opacity-60", c.tint)} />
-                    <CardHeader className="relative flex flex-row items-center justify-between pb-2">
-                      <CardTitle className="text-xs font-medium tracking-wider uppercase text-muted-foreground">
-                        {c.label}
-                      </CardTitle>
-                      <Icon className={cn("w-4 h-4", c.iconColor)} />
-                    </CardHeader>
-                    <CardContent className="relative">
-                      <motion.div
-                        key={c.value}
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.15 + i * 0.07, type: "spring", stiffness: 200 }}
-                        className="text-4xl font-bold tracking-tight tabular-nums"
-                      >
-                        <StatNumber value={c.value} />
-                      </motion.div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center mb-3", c.tile)}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="text-3xl font-bold tracking-tight tabular-nums">{c.value}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{c.label}</div>
+                </div>
               );
             })}
           </div>
 
-          {/* Charts row */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35, duration: 0.4 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-10"
-          >
-            <Card className="lg:col-span-2 border-border/60">
+          {/* Chart + Upcoming */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <Card className="lg:col-span-2 border-border rounded-2xl">
               <CardHeader className="flex flex-row items-center gap-2 pb-2">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <CardTitle className="text-sm font-semibold">Bookings — last 30 days</CardTitle>
+                <TrendingUp className="w-4 h-4 text-foreground" />
+                <CardTitle className="text-base font-semibold">Bookings — Last 30 Days</CardTitle>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={bookingsChartConfig} className="h-[260px] w-full">
+                <ChartContainer config={bookingsChartConfig} className="h-[280px] w-full">
                   <AreaChart data={bookingsOverTime} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="fillBookings" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.5} />
+                        <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.4} />
                         <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0} />
                       </linearGradient>
                     </defs>
@@ -280,91 +213,50 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="border-border/60">
+            <Card className="border-border rounded-2xl">
               <CardHeader className="flex flex-row items-center gap-2 pb-2">
-                <PieIcon className="w-4 h-4 text-primary" />
-                <CardTitle className="text-sm font-semibold">Status breakdown</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {statusBreakdown.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-12 text-center">No bookings yet.</p>
-                ) : (
-                  <ChartContainer config={{}} className="h-[260px] w-full">
-                    <PieChart>
-                      <Pie
-                        data={statusBreakdown}
-                        dataKey="value"
-                        nameKey="name"
-                        innerRadius={50}
-                        outerRadius={85}
-                        paddingAngle={2}
-                        strokeWidth={0}
-                      >
-                        {statusBreakdown.map((s) => (
-                          <Cell key={s.name} fill={s.color} />
-                        ))}
-                      </Pie>
-                      <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                    </PieChart>
-                  </ChartContainer>
-                )}
-                <div className="flex flex-wrap gap-2 justify-center mt-2">
-                  {statusBreakdown.map((s) => (
-                    <div key={s.name} className="flex items-center gap-1.5 text-xs">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
-                      <span className="capitalize text-muted-foreground">{s.name}</span>
-                      <span className="font-semibold tabular-nums">{s.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.4 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Recent Bookings</CardTitle>
+                <Calendar className="w-4 h-4 text-foreground" />
+                <CardTitle className="text-base font-semibold">Upcoming (24h)</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                {recent.length === 0 ? (
-                  <p className="text-sm text-muted-foreground p-6 text-center">No bookings yet.</p>
+                {upcoming.length === 0 ? (
+                  <p className="text-sm text-muted-foreground p-6 text-center">No upcoming appointments.</p>
                 ) : (
                   <ul className="divide-y divide-border">
-                    {recent.map((r, i) => (
-                      <motion.li
+                    {upcoming.map((r, i) => (
+                      <li
                         key={r.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.5 + i * 0.05 }}
-                        className="flex items-center gap-4 px-6 py-3 hover:bg-secondary/40 transition-colors"
+                        style={{ animationDelay: `${i * 40}ms` }}
+                        className="flex items-start gap-3 px-5 py-3 animate-fade-in"
                       >
-                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
+                        <div className="w-9 h-9 shrink-0 rounded-full bg-secondary flex items-center justify-center text-sm font-semibold text-foreground">
                           {r.name?.[0]?.toUpperCase() ?? "?"}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate">{r.name}</div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {r.phone} · {r.service ?? "—"}
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="text-sm font-semibold truncate">{r.name}</div>
+                            <span className={cn(
+                              "text-[10px] uppercase tracking-wide font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
+                              statusPill[r.status] ?? "bg-muted",
+                            )}>
+                              {r.status}
+                            </span>
+                          </div>
+                          <div className="text-xs text-muted-foreground truncate">{r.service ?? "—"}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {r.preferred_date
+                              ? format(new Date(r.preferred_date), "d MMM")
+                              : "—"}
+                            {r.preferred_time ? ` · ${r.preferred_time}` : ""}
                           </div>
                         </div>
-                        <span className={cn(
-                          "text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full",
-                          statusColor[r.status] ?? "bg-muted",
-                        )}>
-                          {r.status}
-                        </span>
-                      </motion.li>
+                      </li>
                     ))}
                   </ul>
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </>
       )}
     </div>
