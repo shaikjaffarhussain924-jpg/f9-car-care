@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Send, Check, CheckCheck, AlertCircle } from "lucide-react";
+import { Loader2, Send, Check, CheckCheck, AlertCircle, Phone, MoreVertical, Smile, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 
 interface WAMessage {
   id: string;
@@ -21,9 +21,9 @@ interface Props {
   phone: string;
   leadId?: string;
   leadType?: "appointment" | "contact";
+  contactName?: string;
 }
 
-// Build phone variants: bare 10-digit and 91-prefixed
 function variants(phone: string): string[] {
   const digits = phone.replace(/\D/g, "");
   const last10 = digits.slice(-10);
@@ -38,15 +38,24 @@ function variants(phone: string): string[] {
 
 function StatusIcon({ status }: { status: string | null }) {
   switch (status) {
-    case "sent": return <Check className="w-3 h-3 opacity-60" />;
-    case "delivered": return <CheckCheck className="w-3 h-3 opacity-60" />;
-    case "read": return <CheckCheck className="w-3 h-3 text-sky-400" />;
-    case "failed": return <AlertCircle className="w-3 h-3 text-destructive" />;
-    default: return null;
+    case "sent": return <Check className="w-3.5 h-3.5 text-muted-foreground" />;
+    case "delivered": return <CheckCheck className="w-3.5 h-3.5 text-muted-foreground" />;
+    case "read": return <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb]" />;
+    case "failed": return <AlertCircle className="w-3.5 h-3.5 text-destructive" />;
+    default: return <Check className="w-3.5 h-3.5 text-muted-foreground/50" />;
   }
 }
 
-export default function WhatsAppThread({ phone, leadId, leadType }: Props) {
+function dayLabel(d: Date) {
+  if (isToday(d)) return "TODAY";
+  if (isYesterday(d)) return "YESTERDAY";
+  return format(d, "MMMM d, yyyy").toUpperCase();
+}
+
+// WhatsApp-style doodle SVG background
+const doodleBg = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'><g fill='none' stroke='%23000' stroke-opacity='0.06' stroke-width='1.2'><circle cx='30' cy='30' r='10'/><path d='M70 20 q15 10 0 20 q-15 10 0 20'/><circle cx='150' cy='40' r='6'/><path d='M120 80 l8 -14 l8 14 z'/><circle cx='40' cy='110' r='14'/><path d='M170 130 q-10 15 -20 0 q-10 -15 -20 0'/><path d='M80 160 h30 v15 h-30 z'/><circle cx='160' cy='180' r='8'/><path d='M10 180 q15 -10 30 0'/></g></svg>")`;
+
+export default function WhatsAppThread({ phone, leadId, leadType, contactName }: Props) {
   const [messages, setMessages] = useState<WAMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState("");
@@ -54,7 +63,7 @@ export default function WhatsAppThread({ phone, leadId, leadType }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const phoneVariants = variants(phone);
+  const phoneVariants = useMemo(() => variants(phone), [phone]);
 
   const fetchMessages = async () => {
     const { data } = await supabase
@@ -87,7 +96,7 @@ export default function WhatsAppThread({ phone, leadId, leadType }: Props) {
   }, [phone]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
   const send = async () => {
@@ -114,59 +123,144 @@ export default function WhatsAppThread({ phone, leadId, leadType }: Props) {
     }
   };
 
+  // Group messages by day
+  const grouped: Array<{ day: string; items: WAMessage[] }> = [];
+  messages.forEach((m) => {
+    const day = format(new Date(m.created_at), "yyyy-MM-dd");
+    const last = grouped[grouped.length - 1];
+    if (last && last.day === day) last.items.push(m);
+    else grouped.push({ day, items: [m] });
+  });
+
+  const initial = (contactName || phone || "?").trim().charAt(0).toUpperCase();
+  const displayName = contactName || `+${phone.replace(/\D/g, "")}`;
+
   return (
-    <div className="flex flex-col h-full">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-secondary/30">
+    <div className="flex flex-col h-full bg-[#efeae2] dark:bg-[#0b141a]">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 py-2.5 bg-[#008069] dark:bg-[#202c33] text-white shadow-sm shrink-0">
+        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-semibold text-base ring-2 ring-white/30">
+          {initial}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-medium text-[15px] truncate leading-tight">{displayName}</div>
+          <div className="text-[12px] text-white/75 truncate">+{phone.replace(/\D/g, "")} · online</div>
+        </div>
+        <button className="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Call">
+          <Phone className="w-5 h-5" />
+        </button>
+        <button className="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="More">
+          <MoreVertical className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Messages */}
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-3 py-4 space-y-1"
+        style={{ backgroundImage: doodleBg, backgroundRepeat: "repeat" }}
+      >
         {loading ? (
           <div className="flex justify-center pt-8">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         ) : messages.length === 0 ? (
-          <div className="text-center text-sm text-muted-foreground pt-8">
-            No messages yet. Say hello 👋
+          <div className="flex justify-center pt-12">
+            <div className="bg-[#fff3c4] dark:bg-[#182229] text-[#54656f] dark:text-[#8696a0] text-xs px-3 py-2 rounded-md shadow-sm max-w-xs text-center">
+              No messages yet. Start the conversation 👋
+            </div>
           </div>
         ) : (
-          messages.map((m, i) => (
-            <div
-              key={m.id}
-              style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
-              className={cn(
-                "flex animate-scale-in",
-                m.direction === "out" ? "justify-end" : "justify-start",
-              )}
-            >
-              <div
-                className={cn(
-                  "max-w-[75%] rounded-2xl px-3.5 py-2 text-sm shadow-sm transition-transform hover:scale-[1.01]",
-                  m.direction === "out"
-                    ? "bg-gradient-to-br from-primary to-primary/85 text-primary-foreground rounded-br-sm shadow-primary/20"
-                    : "bg-card border border-border rounded-bl-sm",
-                )}
-              >
-                <div className="whitespace-pre-wrap break-words">{m.body}</div>
-                <div className={cn(
-                  "flex items-center gap-1 justify-end mt-1 text-[10px]",
-                  m.direction === "out" ? "text-primary-foreground/70" : "text-muted-foreground",
-                )}>
-                  <span>{format(new Date(m.created_at), "HH:mm")}</span>
-                  {m.direction === "out" && <StatusIcon status={m.status} />}
-                </div>
-                {m.error_message && (
-                  <div className="text-[10px] text-destructive mt-1">{m.error_message}</div>
-                )}
+          grouped.map((group) => (
+            <div key={group.day} className="space-y-1">
+              <div className="flex justify-center my-3">
+                <span className="bg-white/95 dark:bg-[#182229] text-[#54656f] dark:text-[#8696a0] text-[11px] font-medium px-3 py-1 rounded-md shadow-sm">
+                  {dayLabel(new Date(group.day))}
+                </span>
               </div>
+              {group.items.map((m, i) => {
+                const out = m.direction === "out";
+                const prev = group.items[i - 1];
+                const grouped = prev && prev.direction === m.direction;
+                return (
+                  <div
+                    key={m.id}
+                    style={{ animationDelay: `${Math.min(i, 6) * 25}ms` }}
+                    className={cn(
+                      "flex animate-fade-in",
+                      out ? "justify-end" : "justify-start",
+                      grouped ? "mt-0.5" : "mt-2",
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "relative max-w-[78%] sm:max-w-[65%] px-2.5 pt-1.5 pb-1 text-[14.2px] leading-snug shadow-[0_1px_0.5px_rgba(11,20,26,0.13)]",
+                        out
+                          ? "bg-[#d9fdd3] dark:bg-[#005c4b] text-[#111b21] dark:text-[#e9edef] rounded-lg rounded-tr-sm"
+                          : "bg-white dark:bg-[#202c33] text-[#111b21] dark:text-[#e9edef] rounded-lg rounded-tl-sm",
+                        !grouped && (out ? "rounded-tr-none" : "rounded-tl-none"),
+                      )}
+                    >
+                      {/* Tail */}
+                      {!grouped && (
+                        <span
+                          className={cn(
+                            "absolute top-0 w-3 h-3 overflow-hidden",
+                            out ? "-right-[7px]" : "-left-[7px]",
+                          )}
+                          aria-hidden
+                        >
+                          <span
+                            className={cn(
+                              "block w-3 h-3 rotate-45 origin-top-left",
+                              out
+                                ? "bg-[#d9fdd3] dark:bg-[#005c4b] -translate-x-1.5"
+                                : "bg-white dark:bg-[#202c33] translate-x-1.5",
+                            )}
+                          />
+                        </span>
+                      )}
+                      <div className="whitespace-pre-wrap break-words pr-14">{m.body}</div>
+                      <div className="float-right -mb-0.5 mt-0.5 ml-2 flex items-center gap-1 text-[11px] text-[#667781] dark:text-[#8696a0]">
+                        <span>{format(new Date(m.created_at), "HH:mm")}</span>
+                        {out && <StatusIcon status={m.status} />}
+                      </div>
+                      <div className="clear-both" />
+                      {m.error_message && (
+                        <div className="text-[11px] text-destructive mt-1">{m.error_message}</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ))
         )}
       </div>
-      <div className="border-t border-border p-3 bg-background">
+
+      {/* Composer */}
+      <div className="px-3 py-2 bg-[#f0f2f5] dark:bg-[#202c33] shrink-0">
         <div className="flex gap-2 items-end">
+          <button
+            type="button"
+            className="p-2 text-[#54656f] dark:text-[#aebac1] hover:text-foreground transition-colors"
+            aria-label="Emoji"
+          >
+            <Smile className="w-5 h-5" />
+          </button>
+          <button
+            type="button"
+            className="p-2 text-[#54656f] dark:text-[#aebac1] hover:text-foreground transition-colors"
+            aria-label="Attach"
+          >
+            <Paperclip className="w-5 h-5" />
+          </button>
           <Textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Type a message…"
-            rows={2}
-            className="resize-none"
+            placeholder="Type a message"
+            rows={1}
+            className="resize-none min-h-[42px] max-h-32 rounded-lg bg-white dark:bg-[#2a3942] border-0 shadow-sm focus-visible:ring-1 focus-visible:ring-primary/40 text-[14.5px] py-2.5"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -174,12 +268,14 @@ export default function WhatsAppThread({ phone, leadId, leadType }: Props) {
               }
             }}
           />
-          <Button onClick={send} disabled={sending || !body.trim()} size="icon">
-            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          <Button
+            onClick={send}
+            disabled={sending || !body.trim()}
+            size="icon"
+            className="rounded-full bg-[#008069] hover:bg-[#017561] text-white shrink-0 w-11 h-11 shadow-md transition-transform active:scale-95"
+          >
+            {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
           </Button>
-        </div>
-        <div className="text-[10px] text-muted-foreground mt-1">
-          To: +{phone.replace(/\D/g, "")} · Press Enter to send
         </div>
       </div>
     </div>
