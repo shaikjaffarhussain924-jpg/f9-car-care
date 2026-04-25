@@ -194,38 +194,35 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
                   >
                     <div
                       className={cn(
-                        "relative max-w-[78%] sm:max-w-[65%] px-2.5 pt-1.5 pb-1 text-[14.2px] leading-snug shadow-[0_1px_0.5px_rgba(11,20,26,0.13)]",
+                        "relative max-w-[78%] sm:max-w-[65%] pl-2 pr-2 py-[6px] text-[14.2px] leading-[19px] shadow-[0_1px_0.5px_rgba(11,20,26,0.13)] rounded-[7.5px]",
                         out
-                          ? "bg-[#d9fdd3] dark:bg-[#005c4b] text-[#111b21] dark:text-[#e9edef] rounded-lg rounded-tr-sm"
-                          : "bg-white dark:bg-[#202c33] text-[#111b21] dark:text-[#e9edef] rounded-lg rounded-tl-sm",
+                          ? "bg-[#d9fdd3] dark:bg-[#005c4b] text-[#111b21] dark:text-[#e9edef]"
+                          : "bg-white dark:bg-[#202c33] text-[#111b21] dark:text-[#e9edef]",
                         !grouped && (out ? "rounded-tr-none" : "rounded-tl-none"),
                       )}
                     >
                       {/* Tail */}
                       {!grouped && (
-                        <span
-                          className={cn(
-                            "absolute top-0 w-3 h-3 overflow-hidden",
-                            out ? "-right-[7px]" : "-left-[7px]",
-                          )}
+                        <svg
                           aria-hidden
+                          viewBox="0 0 8 13"
+                          className={cn(
+                            "absolute top-0 w-2 h-[13px]",
+                            out ? "-right-2 text-[#d9fdd3] dark:text-[#005c4b]" : "-left-2 scale-x-[-1] text-white dark:text-[#202c33]",
+                          )}
                         >
-                          <span
-                            className={cn(
-                              "block w-3 h-3 rotate-45 origin-top-left",
-                              out
-                                ? "bg-[#d9fdd3] dark:bg-[#005c4b] -translate-x-1.5"
-                                : "bg-white dark:bg-[#202c33] translate-x-1.5",
-                            )}
+                          <path
+                            fill="currentColor"
+                            d="M5.188 1.25c-.41-.625-1.07-1-1.766-1H0v13h7.082c1.484 0 2.328-1.703 1.43-2.883L5.188 1.25z"
                           />
-                        </span>
+                        </svg>
                       )}
-                      <div className="whitespace-pre-wrap break-words pr-14">{m.body}</div>
-                      <div className="float-right -mb-0.5 mt-0.5 ml-2 flex items-center gap-1 text-[11px] text-[#667781] dark:text-[#8696a0]">
+                      <span className="whitespace-pre-wrap break-words align-bottom">{m.body}</span>
+                      <span className="inline-block w-[60px]" aria-hidden />
+                      <span className="absolute bottom-[3px] right-[7px] flex items-center gap-1 text-[11px] text-[#667781] dark:text-[#8696a0] select-none">
                         <span>{format(new Date(m.created_at), "HH:mm")}</span>
                         {out && <StatusIcon status={m.status} />}
-                      </div>
-                      <div className="clear-both" />
+                      </span>
                       {m.error_message && (
                         <div className="text-[11px] text-destructive mt-1">{m.error_message}</div>
                       )}
