@@ -147,10 +147,31 @@ export default function AdminLayout() {
           <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center font-heading font-bold text-primary-foreground shadow-lg shadow-primary/20">
             F9
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="font-heading text-sm font-bold tracking-tight">CRM Console</div>
             <div className="text-[11px] text-muted-foreground truncate">{email}</div>
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              const next = !muted;
+              setMuted(next);
+              toast(next ? "Notifications muted" : "Notifications unmuted", {
+                icon: next ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />,
+                duration: 2000,
+              });
+            }}
+            className={cn(
+              "p-1.5 rounded-md transition-colors",
+              muted
+                ? "text-muted-foreground hover:bg-secondary"
+                : "text-primary hover:bg-primary/10",
+            )}
+            aria-label={muted ? "Unmute notifications" : "Mute notifications"}
+            title={muted ? "Unmute notifications" : "Mute notifications"}
+          >
+            {muted ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+          </button>
         </div>
         <nav className="flex-1 px-2 py-4 space-y-1">
           {navItems.map((item, i) => {
