@@ -241,6 +241,7 @@ export default function AdminAppointments() {
                   phone={drawerRow.phone}
                   leadId={drawerRow.id}
                   leadType="appointment"
+                  contactName={drawerRow.name}
                 />
               </div>
             </>

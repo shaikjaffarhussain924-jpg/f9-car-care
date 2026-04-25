@@ -235,6 +235,7 @@ export default function AdminContacts() {
                     phone={drawerRow.phone}
                     leadId={drawerRow.id}
                     leadType="contact"
+                    contactName={drawerRow.name}
                   />
                 ) : (
                   <div className="p-8 text-center text-sm text-muted-foreground">
