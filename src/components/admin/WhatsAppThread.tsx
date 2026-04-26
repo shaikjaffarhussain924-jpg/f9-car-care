@@ -66,13 +66,53 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
 
   const phoneVariants = useMemo(() => variants(phone), [phone]);
 
+  const phoneMatches = (p: string | null | undefined) => {
+    if (!p) return false;
+    const last10 = p.replace(/\D/g, "").slice(-10);
+    return phoneVariants.some((v) => v.endsWith(last10) || last10.endsWith(v.slice(-10)));
+  };
+
+  const mergeRow = (row: WAMessage) => {
+    setMessages((prev) => {
+      // Replace optimistic temp message with same body+direction
+      const tempIdx = prev.findIndex(
+        (m) => m.id.startsWith("temp-") && m.direction === row.direction && m.body === row.body,
+      );
+      if (tempIdx !== -1) {
+        const next = [...prev];
+        next[tempIdx] = row;
+        return next;
+      }
+      // Update existing by id
+      const idx = prev.findIndex((m) => m.id === row.id);
+      if (idx !== -1) {
+        const next = [...prev];
+        next[idx] = row;
+        return next;
+      }
+      return [...prev, row].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      );
+    });
+  };
+
   const fetchMessages = async () => {
     const { data } = await supabase
       .from("whatsapp_messages")
       .select("*")
       .in("phone", phoneVariants)
       .order("created_at", { ascending: true });
-    setMessages((data ?? []) as WAMessage[]);
+    const rows = (data ?? []) as WAMessage[];
+    setMessages((prev) => {
+      const temps = prev.filter(
+        (m) =>
+          m.id.startsWith("temp-") &&
+          !rows.some((r) => r.direction === m.direction && r.body === m.body),
+      );
+      return [...rows, ...temps].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      );
+    });
     setLoading(false);
   };
 
@@ -85,13 +125,22 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
         { event: "*", schema: "public", table: "whatsapp_messages" },
         (payload: any) => {
           const row = (payload.new ?? payload.old) as WAMessage;
-          if (!row || !phoneVariants.includes(row.phone)) return;
-          fetchMessages();
+          if (!row || !phoneMatches(row.phone)) return;
+          if (payload.eventType === "DELETE") {
+            setMessages((prev) => prev.filter((m) => m.id !== row.id));
+          } else {
+            mergeRow(row);
+          }
         },
       )
       .subscribe();
+
+    // Polling fallback in case the realtime socket drops
+    const poll = setInterval(fetchMessages, 15000);
+
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(poll);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phone]);
@@ -101,24 +150,47 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
   }, [messages]);
 
   const send = async () => {
-    if (!body.trim() || sending) return;
+    const text = body.trim();
+    if (!text) return;
+
+    // Optimistic: clear input + show bubble immediately
+    const tempId = `temp-${crypto.randomUUID()}`;
+    const optimistic: WAMessage = {
+      id: tempId,
+      phone,
+      direction: "out",
+      body: text,
+      status: "sending",
+      error_message: null,
+      created_at: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    setBody("");
     setSending(true);
+
     try {
       const { data, error } = await supabase.functions.invoke("whatsapp-send", {
-        body: { phone, body: body.trim(), leadId, leadType },
+        body: { phone, body: text, leadId, leadType },
       });
       if (error) throw error;
       if ((data as any)?.error) {
-        toast({ title: "WhatsApp error", description: (data as any).error, variant: "destructive" });
-      } else {
-        setBody("");
+        const errMsg = (data as any).error as string;
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === tempId ? { ...m, status: "failed", error_message: errMsg } : m,
+          ),
+        );
+        toast({ title: "WhatsApp error", description: errMsg, variant: "destructive" });
       }
+      // success: realtime INSERT will reconcile the temp bubble via mergeRow
     } catch (err: any) {
-      toast({
-        title: "Send failed",
-        description: err?.message ?? "Could not send message",
-        variant: "destructive",
-      });
+      const errMsg = err?.message ?? "Could not send message";
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === tempId ? { ...m, status: "failed", error_message: errMsg } : m,
+        ),
+      );
+      toast({ title: "Send failed", description: errMsg, variant: "destructive" });
     } finally {
       setSending(false);
     }
