@@ -1,38 +1,80 @@
-# WhatsApp CRM — Speed & Visibility Fixes
+## Why incoming messages aren't showing
 
-Three issues to fix in `src/components/admin/WhatsAppThread.tsx`. No DB or edge function changes needed (realtime is already enabled on `whatsapp_messages` with `REPLICA IDENTITY FULL`).
+Right now the database `whatsapp_messages` table has only outgoing rows — zero `direction='in'`. The reason: your n8n flow is connected directly to Meta's WhatsApp Business webhook and sends bot replies through its own WhatsApp node, so:
 
-## 1. Can't see what you're typing
+- Customer messages go to **n8n**, not to our `whatsapp-webhook` function → never inserted in the DB.
+- Bot replies are sent by **n8n via Meta**, not via our `whatsapp-send` function → never inserted in the DB.
 
-**Cause:** The composer `Textarea` sits on a dark `bg-[#2a3942]` (dark theme) / white `bg-white` (light), but inherits muted/dark text colors from the base `Textarea` component, so typed text is invisible against its own background.
+The CRM frontend is fine — `fetchMessages` already loads the entire thread, realtime is enabled, and 15s polling is in place. There's just nothing to render because nothing is being written.
 
-**Fix:** Add explicit text + placeholder colors so it works in both themes:
-- `text-[#111b21] dark:text-[#e9edef]`
-- `placeholder:text-[#8696a0]`
-- `caret-[#008069]` so the cursor is also visible
+## The fix
 
-## 2. Sending feels slow
+Create a single public endpoint that n8n calls for **every** message — both directions. n8n posts to it from two places in your workflow:
 
-**Cause:** `send()` awaits the full Edge Function round-trip (auth check → Meta Graph API → DB insert) before clearing the input or showing the message. On a slow Meta response that's 1–3+ seconds of frozen UI.
+1. Right after the **WhatsApp Trigger** (customer's incoming message) → `direction: "in"`
+2. Right after the **WhatsApp Send Message** node (bot's outgoing reply) → `direction: "out"`
 
-**Fix — optimistic UI:**
-- On send click: immediately clear input, append a temp message bubble with `status: "sending"` and a temporary `id` (`temp-<uuid>`).
-- Fire `supabase.functions.invoke("whatsapp-send", ...)` in the background.
-- When realtime delivers the real row (or the function response returns), reconcile: drop the temp message (the realtime fetch will replace it with the persisted row showing `sent` / `failed`).
-- On error response, mark the temp bubble as `failed` with the error text and keep it visible so the user knows.
-- Keep send button disabled only while *that specific* request is in-flight; allow queueing additional messages by not blocking subsequent sends after the optimistic append.
+The endpoint inserts the row, auto-links it to the matching appointment/contact (same logic the existing webhook uses), and Supabase Realtime instantly pushes it to the open CRM chat. No frontend changes needed.
 
-## 3. n8n inbound messages should update instantly
+## What gets built
 
-**Already wired:** `whatsapp_messages` is in the `supabase_realtime` publication and has `REPLICA IDENTITY FULL`. The component already subscribes to `postgres_changes` for `*` events on the table.
+### New edge function: `n8n-whatsapp-ingest`
+- **Public** (no JWT) — protected by a shared secret header `x-ingest-secret` so only your n8n can post to it.
+- **POST** body:
+  ```json
+  {
+    "phone": "919640456448",
+    "direction": "in",          // or "out"
+    "body": "Hello, how can I help?",
+    "wa_message_id": "wamid.xxx",   // optional, for dedup
+    "status": "received"            // optional; defaults: in→received, out→sent
+  }
+  ```
+- Dedups on `wa_message_id` if provided.
+- Auto-links to the latest matching appointment or contact by last-10-digit phone match.
+- Inserts into `whatsapp_messages` using the service role.
+- Returns `{ ok: true, id }`.
 
-**Improvements to make it reliable with n8n:**
-- Replace the current "any change → refetch all" handler with a direct merge: when a new row arrives, append it to local state if not present (dedup by `id` or `wa_message_id`), instead of issuing a new `SELECT` (faster, no flicker).
-- Match incoming rows against `phoneVariants` so n8n can store the phone in any of the common formats (10-digit, 91-prefixed, full E.164) and they still show up.
-- Keep the `INSERT`/`UPDATE` distinction so status changes (sent → delivered → read) update the existing bubble in place.
-- Add a lightweight 15s polling fallback as a safety net in case the realtime socket drops (common on idle tabs / mobile).
+### New secret
+- `N8N_INGEST_SECRET` — random string you set once. n8n sends it as the `x-ingest-secret` header on every call.
 
-## Files changed
-- `src/components/admin/WhatsAppThread.tsx` — composer text colors, optimistic send, smarter realtime merge + polling fallback.
+### Frontend
+- No changes required. The existing `WhatsAppThread` realtime subscription will pick up new rows the moment they're inserted and merge them into the open chat.
 
-No edge function, DB, or n8n configuration changes are required. n8n just needs to keep inserting into `public.whatsapp_messages` with `direction='in'` and the recipient `phone` (any common format).
+## What you do in n8n (one-time, ~2 minutes)
+
+In your existing workflow, add an **HTTP Request** node after each of these two nodes:
+
+1. **After the WhatsApp Trigger** (customer message in):
+   - URL: `https://wdkhsnbzdlfvbtuukjfj.supabase.co/functions/v1/n8n-whatsapp-ingest`
+   - Method: POST
+   - Header `x-ingest-secret`: *(the secret you set)*
+   - Body (JSON):
+     ```json
+     {
+       "phone": "{{ $json.from }}",
+       "direction": "in",
+       "body": "{{ $json.text || $json.message }}",
+       "wa_message_id": "{{ $json.id }}"
+     }
+     ```
+
+2. **After the WhatsApp Send Message** node (bot reply out):
+   - Same URL, same secret header
+   - Body:
+     ```json
+     {
+       "phone": "{{ $json.to }}",
+       "direction": "out",
+       "body": "{{ $json.text }}",
+       "wa_message_id": "{{ $json.messages[0].id }}"
+     }
+     ```
+
+(Exact field names depend on your nodes — I'll provide screenshots of the right expressions once the endpoint is live.)
+
+## Files
+
+- **Create** `supabase/functions/n8n-whatsapp-ingest/index.ts`
+- **Add secret** `N8N_INGEST_SECRET` (you'll set the value)
+- No frontend or DB schema changes.
