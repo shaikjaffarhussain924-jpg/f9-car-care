@@ -46,6 +46,7 @@ async function autoLink(phone: string): Promise<{
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   const url = new URL(req.url);
+  console.log(`[wa-webhook] ${req.method} ${url.pathname}${url.search} ua=${req.headers.get("user-agent") ?? "?"}`);
 
   // ----- VERIFY HANDSHAKE -----
   if (req.method === "GET") {
