@@ -38,6 +38,7 @@ function variants(phone: string): string[] {
 
 function StatusIcon({ status }: { status: string | null }) {
   switch (status) {
+    case "sending": return <Loader2 className="w-3.5 h-3.5 text-muted-foreground/70 animate-spin" />;
     case "sent": return <Check className="w-3.5 h-3.5 text-muted-foreground" />;
     case "delivered": return <CheckCheck className="w-3.5 h-3.5 text-muted-foreground" />;
     case "read": return <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb]" />;
