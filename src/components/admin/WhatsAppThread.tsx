@@ -363,7 +363,7 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
             onChange={(e) => setBody(e.target.value)}
             placeholder="Type a message"
             rows={1}
-            className="resize-none min-h-[42px] max-h-32 rounded-lg bg-white dark:bg-[#2a3942] border-0 shadow-sm focus-visible:ring-1 focus-visible:ring-primary/40 text-[14.5px] py-2.5"
+            className="resize-none min-h-[42px] max-h-32 rounded-lg bg-white dark:bg-[#2a3942] border-0 shadow-sm focus-visible:ring-1 focus-visible:ring-primary/40 text-[14.5px] py-2.5 text-[#111b21] dark:text-[#e9edef] placeholder:text-[#8696a0] caret-[#008069]"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
