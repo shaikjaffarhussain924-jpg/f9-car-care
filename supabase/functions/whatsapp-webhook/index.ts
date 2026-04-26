@@ -63,6 +63,7 @@ Deno.serve(async (req) => {
   if (req.method === "POST") {
     try {
       const payload = await req.json();
+      console.log("[wa-webhook] payload:", JSON.stringify(payload).slice(0, 2000));
       const entries = payload?.entry ?? [];
       for (const entry of entries) {
         const changes = entry?.changes ?? [];
