@@ -117,6 +117,39 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
     setLoading(false);
   };
 
+  // Notify on incoming message: soft chime + tab title flash
+  const notifyIncoming = () => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.setValueAtTime(880, ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12);
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+      o.connect(g).connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + 0.4);
+    } catch { /* ignore */ }
+
+    const original = document.title;
+    let n = 0;
+    const id = window.setInterval(() => {
+      document.title = (n++ % 2 === 0) ? "💬 New message…" : original;
+    }, 900);
+    const stop = () => {
+      window.clearInterval(id);
+      document.title = original;
+      window.removeEventListener("focus", stop);
+      document.removeEventListener("visibilitychange", stop);
+    };
+    window.addEventListener("focus", stop);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) stop(); });
+    window.setTimeout(stop, 8000);
+  };
+
   useEffect(() => {
     fetchMessages();
     const channel = supabase
@@ -130,7 +163,10 @@ export default function WhatsAppThread({ phone, leadId, leadType, contactName }:
           if (payload.eventType === "DELETE") {
             setMessages((prev) => prev.filter((m) => m.id !== row.id));
           } else {
+            const isNewIncoming =
+              payload.eventType === "INSERT" && row.direction === "in";
             mergeRow(row);
+            if (isNewIncoming) notifyIncoming();
           }
         },
       )
