@@ -77,8 +77,9 @@ const ServiceDetailPage = ({ data }: Props) => {
 
               return (
                 <>
+                  {!hasSplit && VideoBlock}
                   <RawMarkdown source={before} />
-                  {VideoBlock}
+                  {hasSplit && VideoBlock}
                   {after && <RawMarkdown source={after} />}
                 </>
               );
