@@ -11,28 +11,55 @@ const GarwareAuthorised = () => {
     const video = videoRef.current;
     if (!video) return;
 
+    // Cross-browser autoplay requirements: muted + playsInline must be set
+    // imperatively (some browsers ignore React props before first paint).
+    video.muted = true;
+    video.defaultMuted = true;
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+
+    const tryPlay = () => {
+      const p = video.play();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            video.play().catch(() => {});
+            tryPlay();
           } else {
             video.pause();
           }
         });
       },
-      { threshold: 0.4 }
+      { threshold: 0.25 }
     );
 
     observer.observe(video);
-    return () => observer.disconnect();
+
+    // Some mobile browsers need a nudge after metadata is ready
+    video.addEventListener("loadedmetadata", tryPlay);
+    video.addEventListener("canplay", tryPlay);
+
+    return () => {
+      observer.disconnect();
+      video.removeEventListener("loadedmetadata", tryPlay);
+      video.removeEventListener("canplay", tryPlay);
+    };
   }, []);
 
   const toggleMute = () => {
-    if (!videoRef.current) return;
+    const v = videoRef.current;
+    if (!v) return;
     const next = !muted;
-    videoRef.current.muted = next;
+    v.muted = next;
     setMuted(next);
+    if (!next) {
+      const p = v.play();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    }
   };
 
   return (
@@ -49,10 +76,13 @@ const GarwareAuthorised = () => {
             ref={videoRef}
             src="/homepage-showcase.mp4"
             poster={garwareImg}
+            autoPlay
             loop
-            muted={muted}
+            muted
             playsInline
-            preload="metadata"
+            preload="auto"
+            disablePictureInPicture
+            controls={false}
             aria-label="Hyderabad's Garware authorised detailing studio — F9 Car Care PPF & paint protection film"
             className="w-full h-auto object-cover"
           />
