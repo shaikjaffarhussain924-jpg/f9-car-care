@@ -1,41 +1,48 @@
-## Good news: nothing to code
+## SEO Fixes for F9 Car Care
 
-Your `whatsapp-webhook` function already handles inbound messages (the "messages" field you just enabled). Database realtime is already on for `whatsapp_messages`, and the CRM thread already subscribes to it. So the moment Meta starts POSTing customer messages, they will appear live in the chat.
+Apply the user's specified SEO updates to `index.html` and verify `public/robots.txt`.
 
-**The only thing left is making sure Meta is actually sending to your webhook.** Right now your edge function logs are completely empty — Meta has never hit it. That means the webhook URL in Meta is either wrong, not verified, or pointing at n8n instead of Lovable.
+### 1. `index.html` updates
 
-## What I will do
+**Title** → `F9 Car Care & Detailing Studio | Car Wash, Ceramic Coating & PPF in Hyderabad`
 
-### 1. Add a tiny diagnostic log at the top of `whatsapp-webhook`
-So the next time you (or Meta) hits the URL, we see the exact method, headers, and body in logs — making it obvious whether Meta is delivering or not.
+**Meta description** → `F9 Car Care & Detailing Studio in Hafeezpet, Hyderabad offers premium car detailing, ceramic coating, PPF, Teflon coating, deep interior wash, and car denting services. Book your service today!`
 
-### 2. Make incoming messages pop visually in the CRM
-Small UX touches so a new customer message is impossible to miss:
-- Soft chime + browser tab title flash ("(1) New message…") when an `in` message arrives while the thread is open
-- Unread count badge on the lead row in the appointments/contacts list (uses the same realtime channel)
+**Meta author** → `F9 Car Care & Detailing Studio`
 
-### 3. Give you exact Meta dashboard settings to paste
-After deploy I'll print:
-- **Callback URL:** `https://wdkhsnbzdlfvbtuukjfj.supabase.co/functions/v1/whatsapp-webhook`
-- **Verify token:** the value of your `META_WA_VERIFY_TOKEN` secret (already set)
-- **Subscribed fields:** `messages` ✅ (you just did this)
+**OG title** → `F9 Car Care & Detailing Studio | Best Car Detailing in Hyderabad`
 
-You go to **Meta → WhatsApp → Configuration → Webhook**, paste those, click **Verify and Save**, then click **Subscribe** on the `messages` field for your phone number. I'll then check the logs to confirm Meta hit us.
+**OG description** → `Premium car care services in Hafeezpet, Hyderabad — Ceramic Coating, PPF, Teflon Coating, Interior Wash & more. Visit F9 Car Care today!`
 
-### 4. Test end-to-end
-Once you've saved the webhook in Meta, send a WhatsApp message from your personal phone to your business number. I'll watch the edge function logs and the database to confirm the message appears, then you'll see it live in the CRM thread.
+**Twitter:site** → `@f9_car_detailing_studio`
 
-## Files
+**Twitter:title** → match new OG title
 
-- **Edit** `supabase/functions/whatsapp-webhook/index.ts` — add request logging at the top
-- **Edit** `src/components/admin/WhatsAppThread.tsx` — chime + tab flash on incoming
-- **Edit** `src/pages/admin/AdminAppointments.tsx` and `AdminContacts.tsx` — unread badge per lead
+**Twitter:description** → match new OG description
 
-## Important — what about n8n?
+### 2. Add Local Business JSON-LD
 
-If your n8n workflow is **also** subscribed to the same WhatsApp number's webhook in Meta, Meta will only deliver to **one** URL — whichever you save last. You have two choices:
+Append the provided `AutoRepair` schema as a second `<script type="application/ld+json">` block in `<head>`. I'll drop the irrelevant `servesCuisine: null` field (not valid for AutoRepair). Telephone will be set to `+91-XXXXXXXXXX` exactly as provided — **please confirm if you'd like the real number `+91-7032674047` used instead** (recommended for SEO).
 
-1. **Point Meta at n8n** (your bot keeps working) → use the `n8n-whatsapp-ingest` endpoint we built earlier so n8n forwards a copy to the CRM. (Needs the `N8N_INGEST_SECRET` you haven't set yet.)
-2. **Point Meta at Lovable** → bot stops unless you also forward from this webhook to n8n.
+> Note: the existing schema block already uses the real domain `https://www.f9carcare.co.in`. The new block uses `https://f9-car-care.lovable.app`. Mixing two URLs for the same business hurts SEO. **Recommend using `https://www.f9carcare.co.in` in the new schema too** for consistency.
 
-I'll ask you which one you want right after you approve this plan, before changing anything in Meta.
+### 3. `public/robots.txt`
+
+Your message was cut off after "Add a robots.txt file at the root with:" — the contents weren't included. The current `robots.txt` already contains:
+
+```
+User-agent: *
+Allow: /
+Sitemap: https://www.f9carcare.co.in/sitemap.xml
+```
+
+**Please paste the exact contents you want**, or confirm the existing file is fine.
+
+### Files modified
+- `index.html`
+- `public/robots.txt` (pending your content)
+
+### Open questions before implementing
+1. Use real phone `+91-7032674047` in the new schema, or keep the placeholder `+91-XXXXXXXXXX`?
+2. Use canonical domain `https://www.f9carcare.co.in` in the new schema (recommended) or keep `https://f9-car-care.lovable.app` as you wrote?
+3. What should `robots.txt` contain?
