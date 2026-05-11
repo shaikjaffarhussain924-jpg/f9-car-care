@@ -85,11 +85,13 @@ export interface ServicePageData {
   ctaButton2: string;
   rawContent?: string;
   videoSrc?: string;
+  imageSrc?: string;
 }
 
 export const servicePages: ServicePageData[] = [
   {
     slug: "ceramic-coating",
+    imageSrc: "/ceramic-coating-poster.jpg",
     titleTag: "Best Ceramic Coating Services in Hyderabad | F9 Car Care",
     metaDescription: "Premium ceramic coating in Hyderabad at F9 Car Care, Gopal Nagar. System X (USA), Graphene+ (Australia), Borophene Apex (England). 3–6 yr warranty. Serving Madhapur, Hitech City, Gachibowli. Call 7032674047.",
     h1: "Best Ceramic Coating Services in Hyderabad | F9 Car Care & Detailing Studio",

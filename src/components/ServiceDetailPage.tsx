@@ -200,6 +200,24 @@ const ServiceDetailPage = ({ data }: Props) => {
         </section>
       )}
 
+      {data.imageSrc && !data.videoSrc && (
+        <section className="bg-background pb-8">
+          <div className="max-w-3xl mx-auto px-6 flex justify-center">
+            <div
+              className="relative w-full bg-black overflow-hidden border border-border rounded-lg"
+              style={{ maxWidth: "340px", aspectRatio: "9 / 16" }}
+            >
+              <img
+                src={data.imageSrc}
+                alt={data.h1}
+                loading="lazy"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Benefits Cards */}
       {data.benefits.length > 0 && (
         <section className="section-padding bg-background">
