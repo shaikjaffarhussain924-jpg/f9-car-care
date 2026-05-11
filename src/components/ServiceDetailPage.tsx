@@ -40,30 +40,49 @@ const ServiceDetailPage = ({ data }: Props) => {
               <ArrowLeft className="w-4 h-4" />
               Back to Home
             </Link>
-            {data.videoSrc && (
-              <div className="mb-10 flex justify-center">
-                <div className="relative w-full max-w-2xl aspect-video bg-black overflow-hidden border border-border">
-                  <video
-                    ref={videoRef}
-                    src={data.videoSrc}
-                    autoPlay
-                    loop
-                    muted={muted}
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={toggleMute}
-                    aria-label={muted ? "Unmute video" : "Mute video"}
-                    className="absolute bottom-3 right-3 bg-background/80 hover:bg-background text-foreground p-2 rounded-full transition-colors"
+            {(() => {
+              const splitMarker = "premium-grade film.";
+              const idx = data.rawContent!.indexOf(splitMarker);
+              const hasSplit = data.videoSrc && idx !== -1;
+              const before = hasSplit ? data.rawContent!.slice(0, idx + splitMarker.length) : data.rawContent!;
+              const after = hasSplit ? data.rawContent!.slice(idx + splitMarker.length) : "";
+
+              const VideoBlock = data.videoSrc ? (
+                <div className="my-10 flex justify-center">
+                  <div
+                    className="relative w-full bg-black overflow-hidden border border-border rounded-lg"
+                    style={{ maxWidth: "340px", aspectRatio: "9 / 16" }}
                   >
-                    {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                  </button>
+                    <video
+                      ref={videoRef}
+                      src={data.videoSrc}
+                      autoPlay
+                      loop
+                      muted={muted}
+                      playsInline
+                      preload="auto"
+                      className="w-full h-full object-contain bg-black"
+                    />
+                    <button
+                      type="button"
+                      onClick={toggleMute}
+                      aria-label={muted ? "Unmute video" : "Mute video"}
+                      className="absolute bottom-3 right-3 bg-background/80 hover:bg-background text-foreground p-2 rounded-full transition-colors"
+                    >
+                      {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-            <RawMarkdown source={data.rawContent} />
+              ) : null;
+
+              return (
+                <>
+                  <RawMarkdown source={before} />
+                  {VideoBlock}
+                  {after && <RawMarkdown source={after} />}
+                </>
+              );
+            })()}
           </div>
         </section>
 
