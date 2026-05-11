@@ -47,7 +47,7 @@ const GarwareAuthorised = () => {
         >
           <video
             ref={videoRef}
-            src="/ppf-demo.mp4"
+            src="/homepage-showcase.mp4"
             poster={garwareImg}
             loop
             muted={muted}
