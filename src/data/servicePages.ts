@@ -84,6 +84,7 @@ export interface ServicePageData {
   ctaButton1Link: string;
   ctaButton2: string;
   rawContent?: string;
+  videoSrc?: string;
 }
 
 export const servicePages: ServicePageData[] = [
@@ -457,6 +458,7 @@ export const servicePages: ServicePageData[] = [
   },
   {
     slug: "ppf",
+    videoSrc: "/ppf-demo.mp4",
     titleTag: "PPF Services in Hyderabad | Paint Protection Film | F9 Car Care",
     metaDescription: "Premium Paint Protection Film (PPF) installation in Hyderabad at F9 Car Care. Self-healing film that protects against scratches, chips & UV rays. Call +91 70326 74047.",
     h1: "PPF (Paint Protection Film) in Hyderabad",
