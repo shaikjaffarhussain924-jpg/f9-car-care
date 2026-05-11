@@ -2121,6 +2121,7 @@ export const servicePages: ServicePageData[] = [
     ctaButton1: "Book Assessment",
     ctaButton1Link: "/book",
     ctaButton2: "Call: 70326 74047",
+    videoSrc: "/denting-demo.mp4",
   },
   {
     slug: "car-restoration",
