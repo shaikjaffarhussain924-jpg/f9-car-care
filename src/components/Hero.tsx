@@ -8,7 +8,7 @@ const Hero = () => {
       <div className="absolute inset-0">
         <motion.img
           src={heroBg}
-          alt="Premium car being serviced in luxury workshop"
+          alt="Premium ceramic coating and car detailing service Hyderabad — F9 Car Care studio"
           className="w-full h-full object-cover scale-105"
           loading="eager"
           initial={{ scale: 1.15 }}
@@ -42,8 +42,8 @@ const Hero = () => {
             className="h-px bg-primary mb-8"
           />
           <h1 className="font-heading text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-foreground mb-6">
-            Your Car,{" "}
-            <span className="text-primary">Our Priority</span>
+            Best Car Detailing Studio in Hyderabad{" "}
+            <span className="text-primary">| F9 Car Care</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl mb-12 leading-relaxed">
             Complete car care solutions — from ceramic coating to full restoration. 20+ years of trusted craftsmanship in Hyderabad.

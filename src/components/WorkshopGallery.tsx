@@ -14,12 +14,12 @@ import gallery5 from "@/assets/gallery-5.webp";
 import gallery6 from "@/assets/gallery-6.webp";
 
 const images = [
-  { src: gallery1, alt: "F9 Car Care studio front with BMW" },
-  { src: gallery2, alt: "Matte black Skoda Kushaq wrap at F9" },
-  { src: gallery3, alt: "BYD with Garware PPF at F9 studio" },
-  { src: gallery4, alt: "Red car denting and painting work at F9" },
-  { src: gallery5, alt: "Skoda Kushaq ceramic coating at F9" },
-  { src: gallery6, alt: "Red BYD at F9 Car Care entrance" },
+  { src: gallery1, alt: "BMW car detailing service Hyderabad at F9 Car Care studio" },
+  { src: gallery2, alt: "Matte black car wrap Hyderabad — Skoda Kushaq at F9 Car Care" },
+  { src: gallery3, alt: "PPF installation Hyderabad F9 Car Care — BYD with Garware paint protection film" },
+  { src: gallery4, alt: "Car denting and painting Hyderabad — F9 Car Care workshop" },
+  { src: gallery5, alt: "Ceramic coating service Hyderabad — Skoda Kushaq at F9 Car Care" },
+  { src: gallery6, alt: "F9 Car Care detailing studio entrance Hafeezpet Hyderabad" },
 ];
 
 const WorkshopGallery = () => {

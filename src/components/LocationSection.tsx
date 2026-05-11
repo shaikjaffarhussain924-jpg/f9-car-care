@@ -97,14 +97,14 @@ const LocationSection = () => {
             className="h-72 lg:h-auto min-h-[300px] border border-border overflow-hidden"
           >
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.0!2d78.3!3d17.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTfCsDMwJzAwLjAiTiA3OMKwMTgnMDAuMCJF!5e0!3m2!1sen!2sin!4v1"
+              src="https://www.google.com/maps?q=F9+Car+Care+%26+Detailing+Studio,+Gopal+Nagar,+Hafeezpet,+Hyderabad+500085&output=embed"
               width="100%"
               height="100%"
               style={{ border: 0, filter: "invert(90%) hue-rotate(180deg) contrast(0.9)" }}
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="F9 Car Care Workshop Location"
+              title="F9 Car Care & Detailing Studio location — Gopal Nagar, Hafeezpet, Hyderabad"
             />
           </motion.div>
         </div>

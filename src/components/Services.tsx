@@ -98,9 +98,9 @@ const Services = () => {
                 <div className="w-12 h-12 flex items-center justify-center border border-border bg-background/50 mb-5 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_hsl(45_100%_50%/0.15)] transition-all duration-500">
                   <service.icon className="w-6 h-6 text-primary group-hover:scale-110 transition-transform duration-500" />
                 </div>
-                <h3 className="font-heading text-lg font-semibold text-foreground mb-3">
-                  {service.title}
-                </h3>
+                <h2 className="font-heading text-lg font-semibold text-foreground mb-3">
+                  {service.title} in Hyderabad
+                </h2>
                 <p className="text-muted-foreground text-sm leading-relaxed mb-6">
                   {service.description}
                 </p>
