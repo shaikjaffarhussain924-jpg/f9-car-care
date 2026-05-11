@@ -5,6 +5,7 @@ import TrustBadges from "@/components/TrustBadges";
 import Services from "@/components/Services";
 import TrustSection from "@/components/TrustSection";
 import WorkshopGallery from "@/components/WorkshopGallery";
+import GarwareAuthorised from "@/components/GarwareAuthorised";
 import Testimonials from "@/components/Testimonials";
 import LocationSection from "@/components/LocationSection";
 import Footer from "@/components/Footer";
@@ -28,6 +29,7 @@ const Index = () => {
       <Services />
       <TrustSection />
       <WorkshopGallery />
+      <GarwareAuthorised />
       <Testimonials />
       <LocationSection />
       <Footer />
