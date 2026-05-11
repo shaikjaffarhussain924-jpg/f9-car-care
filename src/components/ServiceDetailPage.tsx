@@ -169,6 +169,37 @@ const ServiceDetailPage = ({ data }: Props) => {
         </div>
       </section>
 
+      {/* Reel Video */}
+      {data.videoSrc && (
+        <section className="bg-background pb-8">
+          <div className="max-w-3xl mx-auto px-6 flex justify-center">
+            <div
+              className="relative w-full bg-black overflow-hidden border border-border rounded-lg"
+              style={{ maxWidth: "340px", aspectRatio: "9 / 16" }}
+            >
+              <video
+                ref={videoRef}
+                src={data.videoSrc}
+                autoPlay
+                loop
+                muted={muted}
+                playsInline
+                preload="auto"
+                className="w-full h-full object-contain bg-black"
+              />
+              <button
+                type="button"
+                onClick={toggleMute}
+                aria-label={muted ? "Unmute video" : "Mute video"}
+                className="absolute bottom-3 right-3 bg-background/80 hover:bg-background text-foreground p-2 rounded-full transition-colors"
+              >
+                {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Benefits Cards */}
       {data.benefits.length > 0 && (
         <section className="section-padding bg-background">
