@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowLeft, CheckCircle, Phone } from "lucide-react";
+import { ArrowLeft, CheckCircle, Phone, Volume2, VolumeX } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import RawMarkdown from "@/components/RawMarkdown";
 import type { ServicePageData } from "@/data/servicePages";
@@ -11,12 +11,22 @@ interface Props {
 }
 
 const ServiceDetailPage = ({ data }: Props) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = useState(true);
+
   useEffect(() => {
     document.title = data.titleTag;
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", data.metaDescription);
     window.scrollTo(0, 0);
   }, [data]);
+
+  const toggleMute = () => {
+    if (!videoRef.current) return;
+    const next = !muted;
+    videoRef.current.muted = next;
+    setMuted(next);
+  };
 
   if (data.rawContent) {
     return (
