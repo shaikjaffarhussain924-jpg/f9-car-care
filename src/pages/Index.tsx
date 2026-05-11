@@ -15,11 +15,11 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>F9 Car Care | Ceramic Coating, PPF & Car Detailing in Hyderabad</title>
-        <meta name="description" content="F9 Car Care — premium detailing studio in Hafeezpet, Hyderabad. Ceramic coating, PPF, Teflon coating, deep interior cleaning, denting & painting. Book today." />
+        <title>F9 Car Care – Professional Detailing & Car Wash</title>
+        <meta name="description" content="F9 Car Care offers professional car detailing, full wash, and maintenance services. Easy online booking. Fast, reliable, and trusted." />
         <link rel="canonical" href="https://www.f9carcare.co.in/" />
-        <meta property="og:title" content="F9 Car Care | Car Detailing Studio in Hyderabad" />
-        <meta property="og:description" content="Premium ceramic coating, PPF & car wash services in Hafeezpet, Hyderabad." />
+        <meta property="og:title" content="F9 Car Care – Professional Detailing & Car Wash" />
+        <meta property="og:description" content="F9 Car Care offers professional car detailing, full wash, and maintenance services. Easy online booking. Fast, reliable, and trusted." />
         <meta property="og:url" content="https://www.f9carcare.co.in/" />
         <meta property="og:type" content="website" />
       </Helmet>
