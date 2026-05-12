@@ -58,10 +58,12 @@ function applyToTemplate(template: string, meta: PageMeta): string {
   // Inject route-specific tags before </head>
   html = html.replace(/<\/head>/i, `${renderHead(meta)}\n  </head>`);
 
-  // Replace empty root with prerendered content (React will hydrate over it)
+  // Replace empty root with prerendered content visually hidden (still crawlable),
+  // plus a brief loading splash so users don't see raw text before React mounts.
+  const wrapped = `<div id="prerender-seo" aria-hidden="true" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">${meta.bodyHtml}</div><div id="prerender-splash" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#facc15;font-family:system-ui,sans-serif;font-size:14px;letter-spacing:0.2em;text-transform:uppercase;z-index:9999;">Loading…</div>`;
   html = html.replace(
     /<div id="root">\s*<\/div>/,
-    `<div id="root">${meta.bodyHtml}</div>`,
+    `<div id="root">${wrapped}</div>`,
   );
 
   return html;
