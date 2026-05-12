@@ -23,9 +23,9 @@ export default defineConfig(({ mode }) => ({
     formatting: "minify",
     crittersOptions: false,
     // Exclude admin and catch-all from static rendering (SPA-only)
-    includedRoutes(paths) {
+    includedRoutes(paths: string[]) {
       return paths.filter(
-        (p) => !p.startsWith("/admin") && !p.includes("*"),
+        (p: string) => !p.startsWith("/admin") && !p.includes("*"),
       );
     },
   },
