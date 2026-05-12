@@ -46,9 +46,9 @@ const Hero = () => {
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-w-full min-h-full w-auto h-auto object-cover"
         />
         {/* Cinematic overlays */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/30 md:to-background/10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-background/70" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,transparent_0%,hsl(var(--background)/0.6)_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/25 md:to-background/5" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/35 to-background/65" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,transparent_0%,hsl(var(--background)/0.55)_100%)]" />
       </div>
 
       {/* Content */}
