@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => ({
   },
   ssgOptions: {
     script: "async",
-    formatting: "prettify",
+    formatting: "none",
     crittersOptions: false,
   },
 }));
