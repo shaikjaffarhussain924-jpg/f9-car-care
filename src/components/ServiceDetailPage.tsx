@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, CheckCircle, Phone, Volume2, VolumeX } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import RawMarkdown from "@/components/RawMarkdown";
-import type { ServicePageData } from "@/data/servicePages";
+import { servicePages, type ServicePageData } from "@/data/servicePages";
 
 interface Props {
   data: ServicePageData;
