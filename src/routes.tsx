@@ -52,7 +52,8 @@ export const routes: RouteRecord[] = [
       {
         path: "services/:slug",
         Component: ServicePage,
-        getStaticPaths: () => servicePages.map((s) => s.slug),
+        getStaticPaths: () =>
+          servicePages.map((s) => `/services/${s.slug}`),
       },
       ...adminChildren,
       { path: "*", Component: NotFound },
