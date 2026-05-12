@@ -15,6 +15,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminAppointments from "./pages/admin/AdminAppointments";
 import AdminContacts from "./pages/admin/AdminContacts";
+import LegacyRedirect from "./pages/LegacyRedirect";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,10 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/services/:slug" element={<ServicePage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            {/* Legacy .html URLs from old static site → redirect to current slugs */}
+            <Route path="/:file.html" element={<LegacyRedirect />} />
+            {/* Root-level canonical service URLs (must come AFTER static routes) */}
+            <Route path="/:slug" element={<ServicePage />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
