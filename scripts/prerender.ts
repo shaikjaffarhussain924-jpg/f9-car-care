@@ -170,7 +170,7 @@ function renderServiceBody(s: ServicePageData): string {
     );
   }
 
-  // Related Services — internal links for crawler discovery
+  // Related Services — internal links for crawler discovery (root-level canonical URLs)
   const idx = servicePages.findIndex((x) => x.slug === s.slug);
   const related = [1, 2, 3].map(
     (o) => servicePages[(idx + o) % servicePages.length],
@@ -179,7 +179,7 @@ function renderServiceBody(s: ServicePageData): string {
     `<section><h2>Related Services</h2><ul>${related
       .map(
         (r) =>
-          `<li><a href="/services/${r.slug}">${esc(r.h1.split("|")[0].trim())}</a> — ${esc(r.metaDescription)}</li>`,
+          `<li><a href="/${r.slug}">${esc(r.h1.split("|")[0].trim())}</a> — ${esc(r.metaDescription)}</li>`,
       )
       .join("")}</ul></section>`,
   );
@@ -193,7 +193,7 @@ function serviceJsonLd(s: ServicePageData) {
     "@type": "Service",
     name: s.h1,
     description: s.metaDescription,
-    url: `${BASE_URL}/services/${s.slug}`,
+    url: `${BASE_URL}/${s.slug}`,
     provider: {
       "@type": "AutoRepair",
       name: "F9 Car Care & Detailing Studio",
