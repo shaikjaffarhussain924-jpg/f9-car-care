@@ -9,11 +9,35 @@ const Contact = lazy(() => import("./pages/Contact"));
 const ServicePage = lazy(() => import("./pages/ServicePage"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
-const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AdminAppointments = lazy(() => import("./pages/admin/AdminAppointments"));
-const AdminContacts = lazy(() => import("./pages/admin/AdminContacts"));
+
+// Admin routes are client-only (require localStorage / auth) and excluded
+// from static prerendering.
+const adminChildren: RouteRecord[] = import.meta.env.SSR
+  ? []
+  : [
+      {
+        path: "admin/login",
+        Component: lazy(() => import("./pages/admin/AdminLogin")),
+      },
+      {
+        path: "admin",
+        Component: lazy(() => import("./pages/admin/AdminLayout")),
+        children: [
+          {
+            index: true,
+            Component: lazy(() => import("./pages/admin/AdminDashboard")),
+          },
+          {
+            path: "appointments",
+            Component: lazy(() => import("./pages/admin/AdminAppointments")),
+          },
+          {
+            path: "contacts",
+            Component: lazy(() => import("./pages/admin/AdminContacts")),
+          },
+        ],
+      },
+    ];
 
 export const routes: RouteRecord[] = [
   {
@@ -29,16 +53,7 @@ export const routes: RouteRecord[] = [
         Component: ServicePage,
         getStaticPaths: () => servicePages.map((s) => s.slug),
       },
-      { path: "admin/login", Component: AdminLogin },
-      {
-        path: "admin",
-        Component: AdminLayout,
-        children: [
-          { index: true, Component: AdminDashboard },
-          { path: "appointments", Component: AdminAppointments },
-          { path: "contacts", Component: AdminContacts },
-        ],
-      },
+      ...adminChildren,
       { path: "*", Component: NotFound },
     ],
   },
