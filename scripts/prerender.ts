@@ -238,7 +238,7 @@ function main() {
       <nav><h2>Our Services</h2><ul>${servicePages
         .map(
           (s) =>
-            `<li><a href="/services/${s.slug}">${esc(s.h1.split("|")[0].trim())}</a></li>`,
+            `<li><a href="/${s.slug}">${esc(s.h1.split("|")[0].trim())}</a></li>`,
         )
         .join("")}</ul></nav>
       <section><h2>Contact</h2><p>Near Gopal Nagar Kamaan, Manjeera Pipeline Road, Hafeezpet, Hyderabad 500085. Phone: +91 7032674047.</p></section>`,
@@ -284,15 +284,54 @@ function main() {
   writePage("/contact", applyToTemplate(template, contact));
   writePage("/privacy-policy", applyToTemplate(template, privacy));
 
+  // Legacy .html → root-slug redirect map (preserve old indexed URLs from f9carcare.co.in)
+  const LEGACY: Record<string, string> = {
+    "ceramic-coating.html": "ceramic-coating",
+    "paint-protection-film.html": "ppf",
+    "ppf.html": "ppf",
+    "teflon-coating.html": "teflon-coating",
+    "nano-coating.html": "nano-coating",
+    "deep-interior-wash.html": "deep-interior-wash",
+    "car-seat-covers.html": "car-seat-covers",
+    "car-floor-matting.html": "car-seat-covers",
+    "car-denting.html": "car-denting-painting",
+    "car-painting.html": "car-denting-painting",
+    "car-denting-painting.html": "car-denting-painting",
+    "car-restoration.html": "car-restoration",
+    "car-sunfilm.html": "car-sunfilm",
+    "car-washing-painting.html": "car-washing-painting",
+    "car-foam-wash.html": "car-washing-painting",
+    "car-general-service.html": "car-general-service",
+  };
+
   for (const s of servicePages) {
     const meta: PageMeta = {
       title: s.titleTag,
       description: s.metaDescription,
-      canonical: `${BASE_URL}/services/${s.slug}`,
+      canonical: `${BASE_URL}/${s.slug}`,
       bodyHtml: renderServiceBody(s),
       jsonLd: serviceJsonLd(s),
     };
-    writePage(`/services/${s.slug}`, applyToTemplate(template, meta));
+    const html = applyToTemplate(template, meta);
+    // Canonical root-level page
+    writePage(`/${s.slug}`, html);
+    // Backward-compat /services/:slug (links from older indexes still work)
+    writePage(`/services/${s.slug}`, html);
+  }
+
+  // Write legacy .html redirect stubs (meta-refresh + canonical to new URL)
+  for (const [legacy, target] of Object.entries(LEGACY)) {
+    const targetUrl = `${BASE_URL}/${target}`;
+    const stub = `<!doctype html><html lang="en"><head><meta charset="utf-8" />
+<title>${esc(servicePages.find((s) => s.slug === target)?.titleTag || "F9 Car Care")}</title>
+<link rel="canonical" href="${targetUrl}" />
+<meta name="robots" content="noindex,follow" />
+<meta http-equiv="refresh" content="0; url=${targetUrl}" />
+<script>window.location.replace(${JSON.stringify(`/${target}`)});</script>
+</head><body><p>This page has moved to <a href="${targetUrl}">${targetUrl}</a>.</p></body></html>`;
+    const out = resolve(DIST, legacy);
+    writeFileSync(out, stub);
+    console.log(`legacy redirect /${legacy} → /${target}`);
   }
 
   console.log("Prerender complete.");
