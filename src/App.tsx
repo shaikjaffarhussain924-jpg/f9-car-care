@@ -31,6 +31,8 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/services/:slug" element={<ServicePage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            {/* Root-level canonical service URLs + legacy .html compat (handled in component) */}
+            <Route path="/:slug" element={<ServicePage />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />

@@ -58,12 +58,13 @@ function applyToTemplate(template: string, meta: PageMeta): string {
   // Inject route-specific tags before </head>
   html = html.replace(/<\/head>/i, `${renderHead(meta)}\n  </head>`);
 
-  // Replace empty root with prerendered content visually hidden (still crawlable),
-  // plus a brief loading splash so users don't see raw text before React mounts.
-  const wrapped = `<div id="prerender-seo" aria-hidden="true" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">${meta.bodyHtml}</div><div id="prerender-splash" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#facc15;font-family:system-ui,sans-serif;font-size:14px;letter-spacing:0.2em;text-transform:uppercase;z-index:9999;">Loading…</div>`;
+  // Inject prerendered content directly inside #root (visible to all crawlers and LLMs,
+  // not hidden / not clipped / not aria-hidden — avoids any risk of being treated as cloaking).
+  // A full-screen splash sits ABOVE it visually until React mounts and replaces #root entirely.
+  const rootContent = `<main id="prerender-content" style="max-width:960px;margin:0 auto;padding:24px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;line-height:1.6;color:#111;">${meta.bodyHtml}</main><div id="prerender-splash" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#facc15;font-family:system-ui,sans-serif;font-size:14px;letter-spacing:0.2em;text-transform:uppercase;z-index:9999;">Loading…</div>`;
   html = html.replace(
     /<div id="root">\s*<\/div>/,
-    `<div id="root">${wrapped}</div>`,
+    `<div id="root">${rootContent}</div>`,
   );
 
   return html;
@@ -169,7 +170,7 @@ function renderServiceBody(s: ServicePageData): string {
     );
   }
 
-  // Related Services — internal links for crawler discovery
+  // Related Services — internal links for crawler discovery (root-level canonical URLs)
   const idx = servicePages.findIndex((x) => x.slug === s.slug);
   const related = [1, 2, 3].map(
     (o) => servicePages[(idx + o) % servicePages.length],
@@ -178,7 +179,7 @@ function renderServiceBody(s: ServicePageData): string {
     `<section><h2>Related Services</h2><ul>${related
       .map(
         (r) =>
-          `<li><a href="/services/${r.slug}">${esc(r.h1.split("|")[0].trim())}</a> — ${esc(r.metaDescription)}</li>`,
+          `<li><a href="/${r.slug}">${esc(r.h1.split("|")[0].trim())}</a> — ${esc(r.metaDescription)}</li>`,
       )
       .join("")}</ul></section>`,
   );
@@ -192,7 +193,7 @@ function serviceJsonLd(s: ServicePageData) {
     "@type": "Service",
     name: s.h1,
     description: s.metaDescription,
-    url: `${BASE_URL}/services/${s.slug}`,
+    url: `${BASE_URL}/${s.slug}`,
     provider: {
       "@type": "AutoRepair",
       name: "F9 Car Care & Detailing Studio",
@@ -237,7 +238,7 @@ function main() {
       <nav><h2>Our Services</h2><ul>${servicePages
         .map(
           (s) =>
-            `<li><a href="/services/${s.slug}">${esc(s.h1.split("|")[0].trim())}</a></li>`,
+            `<li><a href="/${s.slug}">${esc(s.h1.split("|")[0].trim())}</a></li>`,
         )
         .join("")}</ul></nav>
       <section><h2>Contact</h2><p>Near Gopal Nagar Kamaan, Manjeera Pipeline Road, Hafeezpet, Hyderabad 500085. Phone: +91 7032674047.</p></section>`,
@@ -283,15 +284,54 @@ function main() {
   writePage("/contact", applyToTemplate(template, contact));
   writePage("/privacy-policy", applyToTemplate(template, privacy));
 
+  // Legacy .html → root-slug redirect map (preserve old indexed URLs from f9carcare.co.in)
+  const LEGACY: Record<string, string> = {
+    "ceramic-coating.html": "ceramic-coating",
+    "paint-protection-film.html": "ppf",
+    "ppf.html": "ppf",
+    "teflon-coating.html": "teflon-coating",
+    "nano-coating.html": "nano-coating",
+    "deep-interior-wash.html": "deep-interior-wash",
+    "car-seat-covers.html": "car-seat-covers",
+    "car-floor-matting.html": "car-seat-covers",
+    "car-denting.html": "car-denting-painting",
+    "car-painting.html": "car-denting-painting",
+    "car-denting-painting.html": "car-denting-painting",
+    "car-restoration.html": "car-restoration",
+    "car-sunfilm.html": "car-sunfilm",
+    "car-washing-painting.html": "car-washing-painting",
+    "car-foam-wash.html": "car-washing-painting",
+    "car-general-service.html": "car-general-service",
+  };
+
   for (const s of servicePages) {
     const meta: PageMeta = {
       title: s.titleTag,
       description: s.metaDescription,
-      canonical: `${BASE_URL}/services/${s.slug}`,
+      canonical: `${BASE_URL}/${s.slug}`,
       bodyHtml: renderServiceBody(s),
       jsonLd: serviceJsonLd(s),
     };
-    writePage(`/services/${s.slug}`, applyToTemplate(template, meta));
+    const html = applyToTemplate(template, meta);
+    // Canonical root-level page
+    writePage(`/${s.slug}`, html);
+    // Backward-compat /services/:slug (links from older indexes still work)
+    writePage(`/services/${s.slug}`, html);
+  }
+
+  // Write legacy .html redirect stubs (meta-refresh + canonical to new URL)
+  for (const [legacy, target] of Object.entries(LEGACY)) {
+    const targetUrl = `${BASE_URL}/${target}`;
+    const stub = `<!doctype html><html lang="en"><head><meta charset="utf-8" />
+<title>${esc(servicePages.find((s) => s.slug === target)?.titleTag || "F9 Car Care")}</title>
+<link rel="canonical" href="${targetUrl}" />
+<meta name="robots" content="noindex,follow" />
+<meta http-equiv="refresh" content="0; url=${targetUrl}" />
+<script>window.location.replace(${JSON.stringify(`/${target}`)});</script>
+</head><body><p>This page has moved to <a href="${targetUrl}">${targetUrl}</a>.</p></body></html>`;
+    const out = resolve(DIST, legacy);
+    writeFileSync(out, stub);
+    console.log(`legacy redirect /${legacy} → /${target}`);
   }
 
   console.log("Prerender complete.");

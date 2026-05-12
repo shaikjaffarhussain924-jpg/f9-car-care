@@ -112,7 +112,7 @@ const Navbar = () => {
                       {services.map((s) => (
                         <Link
                           key={s.slug}
-                          to={`/services/${s.slug}`}
+                          to={`/${s.slug}`}
                           onClick={() => setServicesOpen(false)}
                           className="block px-5 py-2.5 text-xs tracking-wide text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
                         >
@@ -207,7 +207,7 @@ const Navbar = () => {
                     {services.map((s) => (
                       <Link
                         key={s.slug}
-                        to={`/services/${s.slug}`}
+                        to={`/${s.slug}`}
                         onClick={() => setIsOpen(false)}
                         className="text-xs text-muted-foreground hover:text-primary transition-colors"
                       >

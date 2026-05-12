@@ -1,93 +1,33 @@
-## Goal
+Diagnosis:
+- The Lovable published URL is crawlable: `https://f9-car-care.lovable.app/services/ceramic-coating` returns the full service text in plain HTML/markdown.
+- The production domain is not serving this app yet: `https://www.f9carcare.co.in/services/ceramic-coating` returns only a blank loader.
+- The production sitemap is also old and points to legacy `.html` URLs, not the current service URLs.
+- So Google/LLMs are likely crawling the old production domain, not the SEO-prerendered Lovable version.
 
-Make F9 Car Care crawlable by Google and LLM crawlers by ensuring public pages return real HTML content, not just an empty React app shell.
+Plan:
+1. Make the production URLs crawler-safe
+   - Add permanent service URLs at the root level, e.g. `/ceramic-coating`, `/paint-protection-film`, `/teflon-coating`, etc.
+   - Keep `/services/:slug` working as compatibility URLs.
+   - Add legacy `.html` compatibility routes like `/ceramic-coating.html`, `/paint-protection-film.html`, etc., so existing indexed URLs do not become dead ends.
 
-## Current problem
+2. Update static prerendering
+   - Generate real static HTML for every root-level service page, `/services/:slug`, and legacy `.html` URL.
+   - Make service content available directly in the HTML source without relying on JavaScript.
+   - Avoid hiding SEO text behind `aria-hidden`/visually-hidden wrappers so LLM crawlers do not treat it as hidden or cloaked content.
 
-The app is currently a Vite React SPA. `index.html` contains `<div id="root"></div>`, while page content, service text, meta tags, and service routes are created after JavaScript runs. Google may eventually render some JavaScript, but many SEO tools, LLM crawlers, and fast crawlers will see little or no page content.
+3. Update metadata and canonicals
+   - Keep unique editable `<title>` and meta descriptions from `src/data/servicePages.ts`.
+   - Set canonical URLs to the preferred root-level pages, e.g. `https://www.f9carcare.co.in/ceramic-coating`.
+   - Add route-specific Open Graph/Twitter tags and service schema JSON-LD.
 
-Also, the current sitemap only lists `/`, so service pages are not being advertised to crawlers.
+4. Update internal navigation
+   - Change the Services dropdown to standard link destinations for the preferred root-level service URLs.
+   - Keep internal related-service links pointing to the preferred root-level URLs.
 
-## Recommended implementation
+5. Regenerate sitemap and robots
+   - Generate `public/sitemap.xml` with all preferred service URLs on `https://www.f9carcare.co.in`.
+   - Keep `robots.txt` allowing crawlers and pointing to the correct sitemap.
 
-Use a static prerender pipeline that generates crawlable `.html` files for:
-
-- `/`
-- `/book`
-- `/contact`
-- `/privacy-policy`
-- `/services/ceramic-coating`
-- `/services/ppf`
-- `/services/teflon-coating`
-- `/services/nano-coating`
-- `/services/deep-interior-wash`
-- `/services/car-seat-covers`
-- `/services/car-denting-painting`
-- `/services/car-restoration`
-- `/services/car-sunfilm`
-- `/services/car-washing-painting`
-- `/services/car-general-service`
-
-Admin routes will remain client-only and excluded from indexing.
-
-## Safer approach than the previous failed attempt
-
-The earlier `vite-react-ssg` attempt hit a `react-helmet-async` SSR context mismatch. To avoid that, I will not depend on Helmet SSR injection.
-
-Instead, I will:
-
-1. Keep the normal React app working as-is for users.
-2. Add a custom post-build prerender script using `react-dom/server`.
-3. Render public routes to static HTML strings.
-4. Inject the correct title, meta description, canonical URL, Open Graph tags, JSON-LD, and page body into route-specific HTML files.
-5. Leave client-side hydration intact so the pages still behave normally after load.
-
-This avoids changing the runtime framework and avoids the Helmet server-rendering conflict.
-
-## Files to change
-
-- `package.json`
-  - Add a build hook/script to run sitemap generation and prerendering after Vite builds.
-- `scripts/prerender.tsx` or similar
-  - New script that renders public routes into real HTML files under `dist/`.
-- `scripts/generate-sitemap.ts`
-  - New/updated script to include all public indexable routes.
-- `public/sitemap.xml`
-  - Regenerated with all public service pages.
-- Possibly `src/App.tsx` / route wrapper files
-  - Only if needed to render the public pages cleanly in the prerender script.
-- `index.html`
-  - Keep existing app shell, but ensure canonical/domain metadata is not conflicting.
-
-## SEO output after implementation
-
-For each public route, the built output should contain:
-
-- Real visible page text in HTML
-- One route-specific `<title>`
-- Meta description
-- Canonical URL using `https://www.f9carcare.co.in`
-- Open Graph metadata
-- Structured data where applicable
-- Crawlable service body content
-
-## Verification
-
-After implementation, I will verify that generated HTML files contain actual service content without JavaScript execution, for example:
-
-- `dist/services/ceramic-coating/index.html` contains the ceramic coating H1 and body text
-- `dist/services/ppf/index.html` contains PPF content
-- `dist/sitemap.xml` lists all public routes
-- Admin pages are not included in the sitemap
-
-## What will not change
-
-- No visual redesign
-- No service-page text rewriting or summarizing
-- No backend changes
-- No admin route indexing
-- No migration to another framework
-
-## Result
-
-After publishing, Google and LLM crawlers should be able to fetch public pages and read the service-page content directly from HTML.
+6. Required publish/domain step
+   - After code changes, publish/update the Lovable app.
+   - Connect `www.f9carcare.co.in` to this Lovable project in Domains/DNS. Right now this domain appears to be serving an older site, which is the main reason LLMs cannot read the service pages.

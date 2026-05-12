@@ -16,8 +16,9 @@ const entries: SitemapEntry[] = [
   { path: "/book", changefreq: "monthly", priority: "0.8" },
   { path: "/contact", changefreq: "monthly", priority: "0.7" },
   { path: "/privacy-policy", changefreq: "yearly", priority: "0.3" },
+  // Canonical service URLs (root-level)
   ...servicePages.map((s) => ({
-    path: `/services/${s.slug}`,
+    path: `/${s.slug}`,
     changefreq: "monthly" as const,
     priority: "0.9",
   })),
