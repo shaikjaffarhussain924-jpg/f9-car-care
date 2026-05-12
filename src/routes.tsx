@@ -12,7 +12,8 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Admin routes are client-only (require localStorage / auth) and excluded
 // from static prerendering.
-const adminChildren: RouteRecord[] = import.meta.env.SSR
+const isServer = typeof window === "undefined";
+const adminChildren: RouteRecord[] = isServer
   ? []
   : [
       {
