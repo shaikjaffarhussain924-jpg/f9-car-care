@@ -1,48 +1,82 @@
-## SEO Fixes for F9 Car Care
+## Goal
 
-Apply the user's specified SEO updates to `index.html` and verify `public/robots.txt`.
+Make every public route on F9 Car Care render as fully-formed HTML at build time so Google (and other crawlers) sees real content, titles, meta tags, and JSON-LD without needing to execute JavaScript.
 
-### 1. `index.html` updates
+Today the site is a client-side React SPA built with Vite. `index.html` ships an empty `<div id="root">`, and React Helmet sets titles/meta only after JS runs. Crawlers that don't execute JS — or execute it slowly — see a blank shell. Prerendering fixes this.
 
-**Title** → `F9 Car Care & Detailing Studio | Car Wash, Ceramic Coating & PPF in Hyderabad`
+## Approach: `vite-react-ssg` static export
 
-**Meta description** → `F9 Car Care & Detailing Studio in Hafeezpet, Hyderabad offers premium car detailing, ceramic coating, PPF, Teflon coating, deep interior wash, and car denting services. Book your service today!`
+After comparing options I recommend `**vite-react-ssg**` (static export), not runtime prerendering:
 
-**Meta author** → `F9 Car Care & Detailing Studio`
+- It renders each route to a real `.html` file at `vite build` time → output is plain static HTML in `dist/`.
+- Works with our existing React Router setup with minimal refactor.
+- Plays nicely with `react-helmet-async` (already installed) so per-page titles/meta/canonical/OG tags get baked into the HTML.
+- No Node server needed at runtime — Lovable's static hosting serves the files directly.
 
-**OG title** → `F9 Car Care & Detailing Studio | Best Car Detailing in Hyderabad`
+Rejected alternatives:
 
-**OG description** → `Premium car care services in Hafeezpet, Hyderabad — Ceramic Coating, PPF, Teflon Coating, Interior Wash & more. Visit F9 Car Care today!`
+- `**vite-plugin-prerender` / `react-snap**`: rely on headless Chrome at build time; flaky in Lovable's build environment.
+- **SSR (Next.js / Remix migration)**: out of scope and against project tech stack.
 
-**Twitter:site** → `@f9_car_detailing_studio`
+## Routes to prerender
 
-**Twitter:title** → match new OG title
+Static, public, indexable routes (from `src/App.tsx`):
 
-**Twitter:description** → match new OG description
+- `/`
+- `/book`
+- `/contact`
+- `/privacy-policy`
+- `/services/:slug` — one page per entry in `src/data/servicePages.ts` (expanded at build time)
 
-### 2. Add Local Business JSON-LD
+Excluded (noindex / private):
 
-Append the provided `AutoRepair` schema as a second `<script type="application/ld+json">` block in `<head>`. I'll drop the irrelevant `servesCuisine: null` field (not valid for AutoRepair). Telephone will be set to `+91-XXXXXXXXXX` exactly as provided — **please confirm if you'd like the real number `+91-7032674047` used instead** (recommended for SEO).
+- `/admin/*` (login + dashboard)
+- `*` (NotFound)
 
-> Note: the existing schema block already uses the real domain `https://www.f9carcare.co.in`. The new block uses `https://f9-car-care.lovable.app`. Mixing two URLs for the same business hurts SEO. **Recommend using `https://www.f9carcare.co.in` in the new schema too** for consistency.
+## Technical changes
 
-### 3. `public/robots.txt`
+1. **Install**
+  - `bun add -D vite-react-ssg`
+2. **Refactor router to a route config**
+  - Convert `src/App.tsx`'s inline `<Routes>` JSX into an exported `routes` array (`createBrowserRouter`-compatible) in a new `src/routes.tsx`.
+  - Keep `App.tsx` providers (Helmet, QueryClient, Tooltip, Toasters) wrapping `<RouterProvider>` for the dev/runtime path.
+  - Export a `getStaticPaths` for `/services/:slug` that returns every slug from `servicePages`.
+3. **Entry points** (required by vite-react-ssg)
+  - `src/main.tsx` → use `ViteReactSSG` with the routes array; keeps client hydration working.
+  - Update `index.html` if needed (it already has `<div id="root">` — fine).
+4. **Vite config**
+  - `vite.config.ts`: add the `vite-react-ssg` plugin and configure `ssgOptions` (formatting: `'minify'`, `crittersOptions: false` to keep things simple).
+5. **Build script**
+  - `package.json`: change `"build": "vite build"` → `"build": "vite-react-ssg build"`.
+  - `predev`/`prebuild` sitemap generator stays as-is.
+6. **Sitemap**
+  - Update `scripts/generate-sitemap.ts` (or create one — current `public/sitemap.xml` is hand-edited with only `/`) to include all prerendered routes, including each `/services/:slug`. This will be confirmed/handled separately if needed.
+7. **Helmet**
+  - Already used on `Index`, `BookAppointment`, `Contact`, `ServicePage`, `PrivacyPolicy`. `vite-react-ssg` uses Helmet's server-side `renderStatic` to inject tags into each generated HTML file. No code changes needed beyond ensuring `HelmetProvider` wraps the app (it does).
+  - Bonus: remove the duplicate static `<title>`/`<meta description>` in `index.html` so Helmet's per-page values aren't shadowed in view-source for `/` (optional — Helmet overrides them at runtime, but for prerender the page-specific ones will be written into the file correctly).
+8. **Verify after build**
+  - `dist/index.html`, `dist/book/index.html`, `dist/contact/index.html`, `dist/privacy-policy/index.html`, `dist/services/<slug>/index.html` all exist.
+  - Each contains the route's real H1, body copy, meta description, canonical, OG tags, and JSON-LD (where applicable).
+  - `curl https://...` (or `view-source:`) shows content without running JS.
 
-Your message was cut off after "Add a robots.txt file at the root with:" — the contents weren't included. The current `robots.txt` already contains:
+## What does NOT change
 
-```
-User-agent: *
-Allow: /
-Sitemap: https://www.f9carcare.co.in/sitemap.xml
-```
+- No UI changes.
+- No backend / Supabase changes.
+- Routing behavior in the browser stays identical (client-side nav after first paint).
+- Admin pages stay client-only.
 
-**Please paste the exact contents you want**, or confirm the existing file is fine.
+## Risks / notes
 
-### Files modified
-- `index.html`
-- `public/robots.txt` (pending your content)
+- One-time refactor of `App.tsx` into a route config — small but touches the app's entry. Will be done carefully so dev preview keeps working.
+- Build time will increase slightly (one render per route).
+- If a service page component reads `window`/`document` at module top level, it'll crash SSR. I'll guard any such access with `typeof window !== 'undefined'` checks during implementation if encountered.
 
-### Open questions before implementing
-1. Use real phone `+91-7032674047` in the new schema, or keep the placeholder `+91-XXXXXXXXXX`?
-2. Use canonical domain `https://www.f9carcare.co.in` in the new schema (recommended) or keep `https://f9-car-care.lovable.app` as you wrote?
-3. What should `robots.txt` contain?
+## Files touched
+
+- `package.json` (deps + build script)
+- `vite.config.ts` (plugin)
+- `src/main.tsx` (entry)
+- `src/App.tsx` → split into `src/routes.tsx` + slimmer `App.tsx`
+- (maybe) `index.html` — drop static title/description duplicates
+- (maybe) `scripts/generate-sitemap.ts` + `public/sitemap.xml` regen
