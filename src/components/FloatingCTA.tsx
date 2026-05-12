@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { CalendarCheck, MessageCircle } from "lucide-react";
+import { CalendarCheck } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import whatsappLogo from "@/assets/whatsapp-logo.png";
 
 const FloatingCTA = () => {
   const [visible, setVisible] = useState(false);
@@ -31,9 +32,10 @@ const FloatingCTA = () => {
               href="https://wa.me/917032674047?text=I'd%20like%20to%20book%20a%20service"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-12 h-12 flex items-center justify-center bg-[#25D366] text-white shadow-lg hover:shadow-xl transition-all"
+              className="w-12 h-12 flex items-center justify-center bg-background/95 border border-border shadow-lg hover:shadow-xl transition-all overflow-hidden"
+              aria-label="Chat on WhatsApp"
             >
-              <MessageCircle className="w-5 h-5" />
+              <img src={whatsappLogo} alt="WhatsApp" className="w-9 h-9 object-contain" />
             </a>
             <Link
               to="/book"
