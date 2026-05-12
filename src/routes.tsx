@@ -29,12 +29,10 @@ export const routes: RouteRecord[] = [
         Component: ServicePage,
         getStaticPaths: () => servicePages.map((s) => s.slug),
       },
-      // SPA-only (not prerendered)
-      { path: "admin/login", Component: AdminLogin, entry: "spa" as never },
+      { path: "admin/login", Component: AdminLogin },
       {
         path: "admin",
         Component: AdminLayout,
-        entry: "spa" as never,
         children: [
           { index: true, Component: AdminDashboard },
           { path: "appointments", Component: AdminAppointments },

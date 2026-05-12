@@ -18,4 +18,15 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  ssgOptions: {
+    script: "async",
+    formatting: "minify",
+    crittersOptions: false,
+    // Exclude admin and catch-all from static rendering (SPA-only)
+    includedRoutes(paths) {
+      return paths.filter(
+        (p) => !p.startsWith("/admin") && !p.includes("*"),
+      );
+    },
+  },
 }));
