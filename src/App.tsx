@@ -32,9 +32,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/services/:slug" element={<ServicePage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            {/* Legacy .html URLs from old static site → redirect to current slugs */}
-            <Route path="/:file.html" element={<LegacyRedirect />} />
-            {/* Root-level canonical service URLs (must come AFTER static routes) */}
+            {/* Root-level canonical service URLs + legacy .html compat (handled in component) */}
             <Route path="/:slug" element={<ServicePage />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
