@@ -2,16 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { Menu, X, Phone, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
+import whatsappLogo from "@/assets/whatsapp-logo.png";
 
-const WhatsAppIcon = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
-  <svg
-    viewBox="0 0 32 32"
-    fill="currentColor"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M19.11 17.205c-.372 0-1.088 1.39-1.518 1.39a.63.63 0 0 1-.315-.1c-.802-.402-1.504-.817-2.163-1.447-.545-.516-1.146-1.29-1.46-1.963a.426.426 0 0 1-.073-.215c0-.33.99-.945.99-1.49 0-.143-.73-2.09-.832-2.335-.143-.372-.214-.487-.6-.487-.187 0-.36-.043-.53-.043-.302 0-.53.115-.746.315-.688.645-1.032 1.318-1.06 2.264v.114c-.015.99.472 1.977 1.017 2.78 1.23 1.82 2.506 3.41 4.554 4.34.616.287 2.035.93 2.722.93.832 0 2.15-.43 2.478-1.218.215-.515.215-.948.157-1.49-.058-.157-.3-.244-.585-.358ZM16.045 21.78c-1.39 0-2.78-.387-3.997-1.075l-2.78.93.93-2.78a8.012 8.012 0 0 1-1.075-4.013c0-4.32 3.55-7.87 7.87-7.87s7.87 3.55 7.87 7.87-3.55 7.94-7.87 7.94Zm0-17.327c-5.222 0-9.46 4.24-9.46 9.46 0 1.633.43 3.247 1.247 4.66l-1.434 4.245 4.396-1.39a9.402 9.402 0 0 0 4.524 1.16c5.222 0 9.46-4.24 9.46-9.46s-4.24-9.46-9.46-9.46l-.272.005Z" />
-  </svg>
+const WhatsAppIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <img src={whatsappLogo} alt="WhatsApp" className={`${className} object-contain`} />
 );
 
 const services = [
