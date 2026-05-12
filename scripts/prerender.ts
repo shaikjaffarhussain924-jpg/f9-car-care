@@ -61,7 +61,7 @@ function applyToTemplate(template: string, meta: PageMeta): string {
   // Inject prerendered content directly inside #root (visible to all crawlers and LLMs,
   // not hidden / not clipped / not aria-hidden — avoids any risk of being treated as cloaking).
   // A full-screen splash sits ABOVE it visually until React mounts and replaces #root entirely.
-  const rootContent = `<main id="prerender-content" style="max-width:960px;margin:0 auto;padding:24px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;line-height:1.6;color:#111;">${meta.bodyHtml}</main><div id="prerender-splash" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#facc15;font-family:system-ui,sans-serif;font-size:14px;letter-spacing:0.2em;text-transform:uppercase;z-index:9999;">Loading…</div>`;
+  const rootContent = `<main id="prerender-content" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">${meta.bodyHtml}</main>`;
   html = html.replace(
     /<div id="root">\s*<\/div>/,
     `<div id="root">${rootContent}</div>`,
