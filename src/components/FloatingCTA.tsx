@@ -32,10 +32,10 @@ const FloatingCTA = () => {
               href="https://wa.me/917032674047?text=I'd%20like%20to%20book%20a%20service"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-12 h-12 flex items-center justify-center bg-background/95 border border-border shadow-lg hover:shadow-xl transition-all overflow-hidden"
+              className="w-12 h-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all overflow-hidden"
               aria-label="Chat on WhatsApp"
             >
-              <img src={whatsappLogo} alt="WhatsApp" className="w-9 h-9 object-contain" />
+              <img src={whatsappLogo} alt="WhatsApp" className="w-full h-full object-cover" />
             </a>
             <Link
               to="/book"
