@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, CheckCircle, Phone, Volume2, VolumeX } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import RawMarkdown from "@/components/RawMarkdown";
-import type { ServicePageData } from "@/data/servicePages";
+import { servicePages, type ServicePageData } from "@/data/servicePages";
 
 interface Props {
   data: ServicePageData;
@@ -511,6 +511,42 @@ const ServiceDetailPage = ({ data }: Props) => {
           </motion.div>
         </div>
       </section>
+
+      {/* Related Services — internal linking for SEO crawl discovery */}
+      {(() => {
+        const idx = servicePages.findIndex((s) => s.slug === data.slug);
+        const related = [1, 2, 3]
+          .map((o) => servicePages[(idx + o) % servicePages.length])
+          .filter(Boolean);
+        return (
+          <section className="py-16 bg-muted/30 border-t border-border">
+            <div className="container mx-auto px-4">
+              <h2 className="font-heading text-2xl md:text-3xl font-bold mb-8 text-center">
+                Related Services
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                {related.map((r) => (
+                  <Link
+                    key={r.slug}
+                    to={`/services/${r.slug}`}
+                    className="group block bg-card border border-border p-6 hover:border-primary transition-all"
+                  >
+                    <h3 className="font-heading text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
+                      {r.h1.split("|")[0].trim()}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {r.metaDescription}
+                    </p>
+                    <span className="inline-block mt-4 text-xs tracking-[0.15em] uppercase text-primary">
+                      Learn More →
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
     </div>
   );
 };
