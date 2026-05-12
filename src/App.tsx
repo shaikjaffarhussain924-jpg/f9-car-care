@@ -15,7 +15,6 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminAppointments from "./pages/admin/AdminAppointments";
 import AdminContacts from "./pages/admin/AdminContacts";
-import LegacyRedirect from "./pages/LegacyRedirect";
 
 const queryClient = new QueryClient();
 
