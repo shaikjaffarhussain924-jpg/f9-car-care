@@ -1,0 +1,45 @@
+// Runs before vite build (prebuild hook); writes public/sitemap.xml.
+import { writeFileSync } from "fs";
+import { resolve } from "path";
+import { servicePages } from "../src/data/servicePages";
+
+const BASE_URL = "https://www.f9carcare.co.in";
+
+interface SitemapEntry {
+  path: string;
+  changefreq?: "weekly" | "monthly" | "yearly";
+  priority?: string;
+}
+
+const entries: SitemapEntry[] = [
+  { path: "/", changefreq: "weekly", priority: "1.0" },
+  { path: "/book", changefreq: "monthly", priority: "0.8" },
+  { path: "/contact", changefreq: "monthly", priority: "0.7" },
+  { path: "/privacy-policy", changefreq: "yearly", priority: "0.3" },
+  ...servicePages.map((s) => ({
+    path: `/services/${s.slug}`,
+    changefreq: "monthly" as const,
+    priority: "0.9",
+  })),
+];
+
+const xml = [
+  `<?xml version="1.0" encoding="UTF-8"?>`,
+  `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`,
+  ...entries.map((e) =>
+    [
+      `  <url>`,
+      `    <loc>${BASE_URL}${e.path}</loc>`,
+      e.changefreq ? `    <changefreq>${e.changefreq}</changefreq>` : null,
+      e.priority ? `    <priority>${e.priority}</priority>` : null,
+      `  </url>`,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  ),
+  `</urlset>`,
+  ``,
+].join("\n");
+
+writeFileSync(resolve("public/sitemap.xml"), xml);
+console.log(`sitemap.xml written (${entries.length} entries)`);
