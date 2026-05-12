@@ -1,82 +1,93 @@
 ## Goal
 
-Make every public route on F9 Car Care render as fully-formed HTML at build time so Google (and other crawlers) sees real content, titles, meta tags, and JSON-LD without needing to execute JavaScript.
+Make F9 Car Care crawlable by Google and LLM crawlers by ensuring public pages return real HTML content, not just an empty React app shell.
 
-Today the site is a client-side React SPA built with Vite. `index.html` ships an empty `<div id="root">`, and React Helmet sets titles/meta only after JS runs. Crawlers that don't execute JS — or execute it slowly — see a blank shell. Prerendering fixes this.
+## Current problem
 
-## Approach: `vite-react-ssg` static export
+The app is currently a Vite React SPA. `index.html` contains `<div id="root"></div>`, while page content, service text, meta tags, and service routes are created after JavaScript runs. Google may eventually render some JavaScript, but many SEO tools, LLM crawlers, and fast crawlers will see little or no page content.
 
-After comparing options I recommend `**vite-react-ssg**` (static export), not runtime prerendering:
+Also, the current sitemap only lists `/`, so service pages are not being advertised to crawlers.
 
-- It renders each route to a real `.html` file at `vite build` time → output is plain static HTML in `dist/`.
-- Works with our existing React Router setup with minimal refactor.
-- Plays nicely with `react-helmet-async` (already installed) so per-page titles/meta/canonical/OG tags get baked into the HTML.
-- No Node server needed at runtime — Lovable's static hosting serves the files directly.
+## Recommended implementation
 
-Rejected alternatives:
-
-- `**vite-plugin-prerender` / `react-snap**`: rely on headless Chrome at build time; flaky in Lovable's build environment.
-- **SSR (Next.js / Remix migration)**: out of scope and against project tech stack.
-
-## Routes to prerender
-
-Static, public, indexable routes (from `src/App.tsx`):
+Use a static prerender pipeline that generates crawlable `.html` files for:
 
 - `/`
 - `/book`
 - `/contact`
 - `/privacy-policy`
-- `/services/:slug` — one page per entry in `src/data/servicePages.ts` (expanded at build time)
+- `/services/ceramic-coating`
+- `/services/ppf`
+- `/services/teflon-coating`
+- `/services/nano-coating`
+- `/services/deep-interior-wash`
+- `/services/car-seat-covers`
+- `/services/car-denting-painting`
+- `/services/car-restoration`
+- `/services/car-sunfilm`
+- `/services/car-washing-painting`
+- `/services/car-general-service`
 
-Excluded (noindex / private):
+Admin routes will remain client-only and excluded from indexing.
 
-- `/admin/*` (login + dashboard)
-- `*` (NotFound)
+## Safer approach than the previous failed attempt
 
-## Technical changes
+The earlier `vite-react-ssg` attempt hit a `react-helmet-async` SSR context mismatch. To avoid that, I will not depend on Helmet SSR injection.
 
-1. **Install**
-  - `bun add -D vite-react-ssg`
-2. **Refactor router to a route config**
-  - Convert `src/App.tsx`'s inline `<Routes>` JSX into an exported `routes` array (`createBrowserRouter`-compatible) in a new `src/routes.tsx`.
-  - Keep `App.tsx` providers (Helmet, QueryClient, Tooltip, Toasters) wrapping `<RouterProvider>` for the dev/runtime path.
-  - Export a `getStaticPaths` for `/services/:slug` that returns every slug from `servicePages`.
-3. **Entry points** (required by vite-react-ssg)
-  - `src/main.tsx` → use `ViteReactSSG` with the routes array; keeps client hydration working.
-  - Update `index.html` if needed (it already has `<div id="root">` — fine).
-4. **Vite config**
-  - `vite.config.ts`: add the `vite-react-ssg` plugin and configure `ssgOptions` (formatting: `'minify'`, `crittersOptions: false` to keep things simple).
-5. **Build script**
-  - `package.json`: change `"build": "vite build"` → `"build": "vite-react-ssg build"`.
-  - `predev`/`prebuild` sitemap generator stays as-is.
-6. **Sitemap**
-  - Update `scripts/generate-sitemap.ts` (or create one — current `public/sitemap.xml` is hand-edited with only `/`) to include all prerendered routes, including each `/services/:slug`. This will be confirmed/handled separately if needed.
-7. **Helmet**
-  - Already used on `Index`, `BookAppointment`, `Contact`, `ServicePage`, `PrivacyPolicy`. `vite-react-ssg` uses Helmet's server-side `renderStatic` to inject tags into each generated HTML file. No code changes needed beyond ensuring `HelmetProvider` wraps the app (it does).
-  - Bonus: remove the duplicate static `<title>`/`<meta description>` in `index.html` so Helmet's per-page values aren't shadowed in view-source for `/` (optional — Helmet overrides them at runtime, but for prerender the page-specific ones will be written into the file correctly).
-8. **Verify after build**
-  - `dist/index.html`, `dist/book/index.html`, `dist/contact/index.html`, `dist/privacy-policy/index.html`, `dist/services/<slug>/index.html` all exist.
-  - Each contains the route's real H1, body copy, meta description, canonical, OG tags, and JSON-LD (where applicable).
-  - `curl https://...` (or `view-source:`) shows content without running JS.
+Instead, I will:
 
-## What does NOT change
+1. Keep the normal React app working as-is for users.
+2. Add a custom post-build prerender script using `react-dom/server`.
+3. Render public routes to static HTML strings.
+4. Inject the correct title, meta description, canonical URL, Open Graph tags, JSON-LD, and page body into route-specific HTML files.
+5. Leave client-side hydration intact so the pages still behave normally after load.
 
-- No UI changes.
-- No backend / Supabase changes.
-- Routing behavior in the browser stays identical (client-side nav after first paint).
-- Admin pages stay client-only.
+This avoids changing the runtime framework and avoids the Helmet server-rendering conflict.
 
-## Risks / notes
+## Files to change
 
-- One-time refactor of `App.tsx` into a route config — small but touches the app's entry. Will be done carefully so dev preview keeps working.
-- Build time will increase slightly (one render per route).
-- If a service page component reads `window`/`document` at module top level, it'll crash SSR. I'll guard any such access with `typeof window !== 'undefined'` checks during implementation if encountered.
+- `package.json`
+  - Add a build hook/script to run sitemap generation and prerendering after Vite builds.
+- `scripts/prerender.tsx` or similar
+  - New script that renders public routes into real HTML files under `dist/`.
+- `scripts/generate-sitemap.ts`
+  - New/updated script to include all public indexable routes.
+- `public/sitemap.xml`
+  - Regenerated with all public service pages.
+- Possibly `src/App.tsx` / route wrapper files
+  - Only if needed to render the public pages cleanly in the prerender script.
+- `index.html`
+  - Keep existing app shell, but ensure canonical/domain metadata is not conflicting.
 
-## Files touched
+## SEO output after implementation
 
-- `package.json` (deps + build script)
-- `vite.config.ts` (plugin)
-- `src/main.tsx` (entry)
-- `src/App.tsx` → split into `src/routes.tsx` + slimmer `App.tsx`
-- (maybe) `index.html` — drop static title/description duplicates
-- (maybe) `scripts/generate-sitemap.ts` + `public/sitemap.xml` regen
+For each public route, the built output should contain:
+
+- Real visible page text in HTML
+- One route-specific `<title>`
+- Meta description
+- Canonical URL using `https://www.f9carcare.co.in`
+- Open Graph metadata
+- Structured data where applicable
+- Crawlable service body content
+
+## Verification
+
+After implementation, I will verify that generated HTML files contain actual service content without JavaScript execution, for example:
+
+- `dist/services/ceramic-coating/index.html` contains the ceramic coating H1 and body text
+- `dist/services/ppf/index.html` contains PPF content
+- `dist/sitemap.xml` lists all public routes
+- Admin pages are not included in the sitemap
+
+## What will not change
+
+- No visual redesign
+- No service-page text rewriting or summarizing
+- No backend changes
+- No admin route indexing
+- No migration to another framework
+
+## Result
+
+After publishing, Google and LLM crawlers should be able to fetch public pages and read the service-page content directly from HTML.
