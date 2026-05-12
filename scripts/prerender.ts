@@ -169,6 +169,20 @@ function renderServiceBody(s: ServicePageData): string {
     );
   }
 
+  // Related Services — internal links for crawler discovery
+  const idx = servicePages.findIndex((x) => x.slug === s.slug);
+  const related = [1, 2, 3].map(
+    (o) => servicePages[(idx + o) % servicePages.length],
+  );
+  parts.push(
+    `<section><h2>Related Services</h2><ul>${related
+      .map(
+        (r) =>
+          `<li><a href="/services/${r.slug}">${esc(r.h1.split("|")[0].trim())}</a> — ${esc(r.metaDescription)}</li>`,
+      )
+      .join("")}</ul></section>`,
+  );
+
   return parts.join("\n");
 }
 
