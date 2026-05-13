@@ -3,7 +3,7 @@ import { writeFileSync } from "fs";
 import { resolve } from "path";
 import { servicePages } from "../src/data/servicePages";
 
-const BASE_URL = "https://www.f9carcare.co.in";
+const BASE_URL = "https://f9-car-care.lovable.app";
 
 interface SitemapEntry {
   path: string;
