@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://www.f9carcare.co.in/sitemap.xml
+Sitemap: https://f9-car-care.lovable.app/sitemap.xml

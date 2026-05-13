@@ -17,10 +17,10 @@ const Index = () => {
       <Helmet>
         <title>F9 Car Care – Professional Detailing & Car Wash</title>
         <meta name="description" content="F9 Car Care offers professional car detailing, full wash, and maintenance services. Easy online booking. Fast, reliable, and trusted." />
-        <link rel="canonical" href="https://www.f9carcare.co.in/" />
+        <link rel="canonical" href="https://f9-car-care.lovable.app/" />
         <meta property="og:title" content="F9 Car Care – Professional Detailing & Car Wash" />
         <meta property="og:description" content="F9 Car Care offers professional car detailing, full wash, and maintenance services. Easy online booking. Fast, reliable, and trusted." />
-        <meta property="og:url" content="https://www.f9carcare.co.in/" />
+        <meta property="og:url" content="https://f9-car-care.lovable.app/" />
         <meta property="og:type" content="website" />
       </Helmet>
       <Navbar />

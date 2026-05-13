@@ -12,7 +12,7 @@ const PrivacyPolicy = () => {
           name="description"
           content="Privacy Policy of F9 Car Care — what information we collect, how we store it, and how we use WhatsApp & email to serve you."
         />
-        <link rel="canonical" href="https://www.f9carcare.co.in/privacy-policy" />
+        <link rel="canonical" href="https://f9-car-care.lovable.app/privacy-policy" />
       </Helmet>
 
       <Navbar />
