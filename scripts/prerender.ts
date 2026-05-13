@@ -6,7 +6,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { servicePages, type ServicePageData } from "../src/data/servicePages";
 
-const BASE_URL = "https://www.f9carcare.co.in";
+const BASE_URL = "https://f9-car-care.lovable.app";
 const DIST = resolve("dist");
 
 function esc(s: string): string {
@@ -58,10 +58,9 @@ function applyToTemplate(template: string, meta: PageMeta): string {
   // Inject route-specific tags before </head>
   html = html.replace(/<\/head>/i, `${renderHead(meta)}\n  </head>`);
 
-  // Inject prerendered content directly inside #root (visible to all crawlers and LLMs,
-  // not hidden / not clipped / not aria-hidden — avoids any risk of being treated as cloaking).
-  // A full-screen splash sits ABOVE it visually until React mounts and replaces #root entirely.
-  const rootContent = `<main id="prerender-content" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">${meta.bodyHtml}</main>`;
+  // Inject visible prerendered content directly inside #root so Google and LLM crawlers
+  // receive the actual page text immediately without JavaScript or hidden/offscreen content.
+  const rootContent = `<main id="prerender-content">${meta.bodyHtml}</main>`;
   html = html.replace(
     /<div id="root">\s*<\/div>/,
     `<div id="root">${rootContent}</div>`,
