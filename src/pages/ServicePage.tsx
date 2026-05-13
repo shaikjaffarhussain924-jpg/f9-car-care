@@ -21,7 +21,7 @@ const ServicePage = () => {
   const data = servicePages.find((s) => s.slug === slug);
   if (!data) return <NotFound />;
 
-  const canonical = `https://www.f9carcare.co.in/${data.slug}`;
+  const canonical = `https://f9-car-care.lovable.app/${data.slug}`;
 
   return (
     <>
