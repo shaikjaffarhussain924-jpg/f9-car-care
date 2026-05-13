@@ -45,7 +45,7 @@ export default function Contact() {
       <Helmet>
         <title>Contact F9 Car Care | Hyderabad</title>
         <meta name="description" content="Send F9 Car Care a message. We respond on WhatsApp, email, or phone." />
-        <link rel="canonical" href="https://www.f9carcare.co.in/contact" />
+        <link rel="canonical" href="https://f9-car-care.lovable.app/contact" />
       </Helmet>
       <Navbar />
       <section className="pt-28 pb-16 section-padding bg-background min-h-[80vh]">
