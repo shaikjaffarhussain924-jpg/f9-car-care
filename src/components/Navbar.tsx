@@ -71,7 +71,6 @@ const Navbar = () => {
             alt="F9 Car Care logo"
             width={48}
             height={48}
-            fetchPriority="high"
             decoding="async"
             className="h-12 w-12 object-contain"
           />
