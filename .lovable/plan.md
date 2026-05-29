@@ -1,26 +1,22 @@
 ## Plan
 
-Update the header so the complete F9 logo from the uploaded PDF is visible, not just the square F9 mark.
+Replace the current navbar logo with the uploaded horizontal F9 lockup (yellow square mark + "CAR-CARE & DETAILING STUDIO" + tagline).
 
-## What I’ll change
+### Changes
 
-1. **Generate a clean web image from the uploaded PDF**
-   - Convert the PDF logo into an optimized PNG.
-   - Crop only empty page whitespace, while keeping the full logo lockup: F9 mark, `CAR-CARE`, `& DETAILING STUDIO`, and `Showroom Shine Everytime`.
+1. **Add the new logo asset**
+   - Copy the uploaded image to `public/f9-logo-horizontal.png`.
+   - Image is wide (~16:9 ratio), so it scales cleanly at navbar height.
 
-2. **Replace the current header logo asset**
-   - Save the full logo as `public/f9-logo-full.png`.
-   - Keep the existing mark-only logo available for favicon/small uses.
+2. **Update `src/components/Navbar.tsx`**
+   - Swap `src="/f9-logo-full.png"` → `src="/f9-logo-horizontal.png"`.
+   - Reduce navbar height back from `h-32` → `h-20` (horizontal logo doesn't need tall container).
+   - Logo `<img>` classes: `h-12 md:h-14 w-auto object-contain` (~48–56px tall, wide aspect renders the full lockup clearly).
+   - Update `width`/`height` attributes to match new image dimensions.
+   - Keep alt text and aria-label.
 
-3. **Adjust navbar sizing**
-   - Use a wider logo display area so the full logo is not clipped.
-   - Keep `object-contain` so the entire artwork is always shown.
-   - Add responsive sizing so desktop shows the full logo clearly, and smaller screens still fit without breaking the nav.
+3. **No other changes** — colors, fonts, links, routes, mobile menu untouched.
 
-4. **Keep crawler/accessibility readability**
-   - Use descriptive alt text: `F9 Car Care & Detailing Studio — Showroom Shine Everytime`.
-   - Keep the logo link accessible with a full brand aria-label.
+### Result
 
-## Verification
-
-After implementation, I’ll check the rendered header at the current desktop viewport and confirm the entire uploaded logo is visible.
+The full horizontal F9 lockup shows in the navbar at a clean, readable size — mark on the left, wordmark + tagline on the right, all visible without clipping.
