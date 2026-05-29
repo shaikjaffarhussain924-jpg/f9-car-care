@@ -72,7 +72,7 @@ const Navbar = () => {
             width={1720}
             height={920}
             decoding="async"
-            className="h-12 md:h-14 w-auto object-contain"
+            className="h-16 md:h-20 w-auto object-contain"
           />
         </Link>
 
