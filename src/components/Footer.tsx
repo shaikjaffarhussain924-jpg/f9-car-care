@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin } from "lucide-react";
+import f9Logo from "@/assets/f9-logo-mark.png";
 
 const Footer = () => {
   return (
@@ -7,8 +8,9 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
           <div>
-            <Link to="/" className="font-heading text-lg font-bold tracking-[0.2em] uppercase text-foreground mb-4 block">
-              F9 Car Care<span className="text-primary">.</span>
+            <Link to="/" className="flex items-center gap-3 font-heading text-lg font-bold tracking-[0.2em] uppercase text-foreground mb-4">
+              <img src={f9Logo} alt="F9 Car Care logo" className="h-12 w-12 object-contain" />
+              <span>F9 Car Care<span className="text-primary">.</span></span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
               Premium car care & detailing studio with 20+ years of experience in Hyderabad.
