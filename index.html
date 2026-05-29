@@ -77,6 +77,21 @@
       "priceRange": "₹₹"
     }
     </script>
+
+    <style>
+      /* Hide prerendered SEO content visually (kept in DOM for crawlers).
+         React replaces #root contents on mount, removing this entirely. */
+      #prerender-content {
+        position: fixed;
+        left: -99999px;
+        top: -99999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
   </head>
 
   <body>
