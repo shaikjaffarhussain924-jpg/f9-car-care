@@ -66,12 +66,16 @@ const Navbar = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-12 h-20">
-        <Link
-          to="/"
-          className="flex items-center gap-3 font-heading text-lg font-bold tracking-[0.2em] uppercase text-foreground"
-        >
-          <img src={f9Logo} alt="F9 Car Care logo" className="h-10 w-10 object-contain" />
-          <span className="hidden sm:inline">F9 Car Care<span className="text-primary">.</span></span>
+        <Link to="/" aria-label="F9 Car Care home" className="flex items-center">
+          <img
+            src={f9Logo}
+            alt="F9 Car Care logo"
+            width={48}
+            height={48}
+            fetchPriority="high"
+            decoding="async"
+            className="h-12 w-12 object-contain"
+          />
         </Link>
 
         <div className="hidden md:flex items-center gap-8 lg:gap-10">
