@@ -64,7 +64,7 @@ const Navbar = () => {
           : "bg-background/80 backdrop-blur-md border-b border-border/20"
       }`}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-12 h-20">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-12 h-24">
         <Link to="/" aria-label="F9 Car Care & Detailing Studio home" className="flex items-center">
           <img
             src="/f9-logo-horizontal.png"
