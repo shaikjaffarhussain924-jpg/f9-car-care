@@ -64,15 +64,15 @@ const Navbar = () => {
           : "bg-background/80 backdrop-blur-md border-b border-border/20"
       }`}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-12 h-24">
-        <Link to="/" aria-label="F9 Car Care home" className="flex items-center">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-12 h-28">
+        <Link to="/" aria-label="F9 Car Care & Detailing Studio home" className="flex items-center">
           <img
-            src="/f9-logo.png"
-            alt="F9 Car Care logo"
-            width={80}
-            height={80}
+            src="/f9-logo-full.png"
+            alt="F9 Car Care & Detailing Studio — Showroom Shine Everytime"
+            width={220}
+            height={110}
             decoding="async"
-            className="h-20 w-auto object-contain"
+            className="h-24 w-auto object-contain"
           />
         </Link>
 
