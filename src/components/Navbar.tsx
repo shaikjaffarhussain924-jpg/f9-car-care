@@ -75,7 +75,17 @@ const Navbar = () => {
           : "bg-background/80 backdrop-blur-md border-b border-border/20"
       }`}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-12 h-20 py-3">
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: hidden ? -120 : 0 }}
+      transition={{ duration: 0.4, ease: [0.25, 0.1, 0, 1] }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-[background,border,box-shadow] duration-500 ${
+        scrolled
+          ? "bg-background/95 backdrop-blur-lg border-b border-border/50 shadow-[0_4px_30px_hsl(0_0%_0%/0.4)]"
+          : "bg-background/80 backdrop-blur-md border-b border-border/20"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-12 h-20 py-4">
         <Link to="/" aria-label="F9 Car Care & Detailing Studio home" className="flex items-center h-full">
           <img
             src="/f9-logo-horizontal.png"
@@ -83,7 +93,7 @@ const Navbar = () => {
             width={1014}
             height={281}
             decoding="async"
-            className="h-full w-auto object-contain block my-auto"
+            className="h-8 md:h-9 w-auto object-contain block"
           />
         </Link>
 
